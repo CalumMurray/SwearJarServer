@@ -1,13 +1,13 @@
 package com.hacku.swearjar.server;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
+//import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import javaFlacEncoder.FLAC_FileEncoder;
+//import javaFlacEncoder.FLAC_FileEncoder;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -59,8 +59,9 @@ public class SwearJarServlet extends HttpServlet {
         fos.close();
 
         //encode the wav file as flac
-        FLAC_FileEncoder encoder = new FLAC_FileEncoder();
-        encoder.encode(new File(wavFilename), new File(flacFilename));
+        //FLAC_FileEncoder encoder = new FLAC_FileEncoder();
+        //encoder.encode(new File(wavFilename), new File(flacFilename));
+        transcode(wavFilename, flacFilename);
         
         //Do speech recogntion and return JSON
         InputStream speechRecognitionJson = getSpeechResponse(flacFilename);
@@ -68,6 +69,32 @@ public class SwearJarServlet extends HttpServlet {
     }
 
     /**
+     * Transcodes file to flac
+     * 
+     * @param inputFile
+     * @param outputFile
+     */
+    private void transcode(String inputFile, String outputFile) {
+    	Runtime rt = Runtime.getRuntime();
+    	try {
+    		
+    		String str = 
+    				"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " +  //Location of vlc
+    				inputFile +							//Location of input 
+    				" --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=8000}" +
+    				":std{access=file, mux=raw, dst=" +
+    				outputFile +						//Location of output
+    				"}\" vlc://quit";
+    		
+			Process pr = rt.exec(str);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
      * Takes the audio at the specified path and sends it off to Google via HTTP
      * POST. Packages the JSON response from Google into a SpeechResponse
      * object.
