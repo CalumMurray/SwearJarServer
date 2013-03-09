@@ -47,10 +47,6 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.javaFlacEncoder-0.2.3.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
-                </library>
-                <library dirs="200">
                     <file>${file.reference.android-support-v4.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
