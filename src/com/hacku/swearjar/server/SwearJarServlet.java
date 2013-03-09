@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 //import javaFlacEncoder.FLAC_FileEncoder;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -26,7 +28,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 /**
  * Servlet implementation class SwearJarServlet
  */
-@WebServlet(description = "Converts incoming .wav file to .flac format before sending to Google's ASR.  Sends json response back to app.",
+@WebServlet(description = "Converts incoming file to .flac format before sending to Google's ASR.  Sends json response back to app.",
 urlPatterns = {"/convert"})
 @MultipartConfig(maxFileSize = 1024 * 1024 * 1024)
 public class SwearJarServlet extends HttpServlet {
@@ -46,7 +48,7 @@ public class SwearJarServlet extends HttpServlet {
         
         //TODO Make these filenames timestamped
         //TODO They're only temp files so figure out how to delete them
-        String wavFilename = "C:\\Users\\Neil\\Desktop\\test2.wav";
+        String wavFilename = "C:\\Users\\Neil\\Desktop\\test2.3gp";
         String flacFilename = "C:\\Users\\Neil\\Desktop\\test2.flac";
         
         
@@ -69,7 +71,7 @@ public class SwearJarServlet extends HttpServlet {
     }
 
     /**
-     * Transcodes file to flac
+     * Transcodes input file to flac
      * 
      * @param inputFile
      * @param outputFile
@@ -87,11 +89,14 @@ public class SwearJarServlet extends HttpServlet {
     				"}\" vlc://quit";
     		
 			Process pr = rt.exec(str);
+                        pr.waitFor();
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 	}
 
 	/**
@@ -142,7 +147,7 @@ public class SwearJarServlet extends HttpServlet {
         // Specify Content and Content-Type parameters for POST request
         MultipartEntity entity = new MultipartEntity();
         entity.addPart("Content", new InputStreamBody(data, "Content"));
-        postRequest.setHeader("Content-Type", "audio/x-flac; rate=16000");
+        postRequest.setHeader("Content-Type", "audio/x-flac; rate=8000");
         postRequest.setEntity(entity);
         return postRequest;
     }
