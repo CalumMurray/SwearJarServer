@@ -1,6 +1,7 @@
 package com.hacku.swearjar.server;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 //import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,26 +37,24 @@ public class SwearJarServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Takes an uncompressed wav file, encodes it as flac, then performs 
-     * speech recognition.  Gives a JSON response containing the recognised 
-     * speech.
-     * 
+     * Takes an audio file, transcodes it to flac, then performs speech
+     * recognition. Gives a JSON response containing the recognised speech.
+     *
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
      * response)
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
+
         //TODO Make these filenames timestamped
-        //TODO They're only temp files so figure out how to delete them
-        String wavFilename = "C:\\Users\\Neil\\Desktop\\test2.3gp";
+        String inputFilename = "C:\\Users\\Neil\\Desktop\\test2.3gp";
         String flacFilename = "C:\\Users\\Neil\\Desktop\\test2.flac";
-        
-        
+
+
         //Read the wav file sent and store it in a .wav file
         Part part = request.getPart("Content");
         InputStream inputStream = part.getInputStream();
-        FileOutputStream fos = new FileOutputStream(wavFilename);
+        FileOutputStream fos = new FileOutputStream(inputFilename);
         IOUtils.copy(inputStream, fos);
         fos.flush();
         fos.close();
@@ -63,43 +62,58 @@ public class SwearJarServlet extends HttpServlet {
         //encode the wav file as flac
         //FLAC_FileEncoder encoder = new FLAC_FileEncoder();
         //encoder.encode(new File(wavFilename), new File(flacFilename));
-        transcode(wavFilename, flacFilename);
-        
+        transcode(inputFilename, flacFilename);
+
         //Do speech recogntion and return JSON
         InputStream speechRecognitionJson = getSpeechResponse(flacFilename);
         IOUtils.copy(speechRecognitionJson, response.getOutputStream());
+
+        //Temporary files can be deleted now
+        delete(inputFilename);
+        delete(flacFilename);
+
+    }
+
+    public void delete(String filename) {
+        try {
+            new File(filename).delete();
+        } catch (NullPointerException ioe) {
+            System.err.println("Error deleting: " + filename);
+        }
     }
 
     /**
      * Transcodes input file to flac
-     * 
+     *
      * @param inputFile
      * @param outputFile
      */
     private void transcode(String inputFile, String outputFile) {
-    	Runtime rt = Runtime.getRuntime();
-    	try {
-    		
-    		String str = 
-    				"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " +  //Location of vlc
-    				inputFile +							//Location of input 
-    				" --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=8000}" +
-    				":std{access=file, mux=raw, dst=" +
-    				outputFile +						//Location of output
-    				"}\" vlc://quit";
-    		
-			Process pr = rt.exec(str);
-                        pr.waitFor();
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-	}
+        Runtime rt = Runtime.getRuntime();
+        try {
 
-	/**
+            String str =
+                    "run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
+                    inputFile + //Location of input 
+                    " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=8000}"
+                    + ":std{access=file, mux=raw, dst="
+                    + outputFile + //Location of output
+                    "}\" vlc://quit";
+
+            Process pr = rt.exec(str);
+
+            int exitStatus = pr.waitFor();
+            System.out.println("VLC exit code: " + exitStatus);
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Takes the audio at the specified path and sends it off to Google via HTTP
      * POST. Packages the JSON response from Google into a SpeechResponse
      * object.
@@ -129,7 +143,7 @@ public class SwearJarServlet extends HttpServlet {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-        
+
         return null;
     }
 
