@@ -2,15 +2,15 @@ package com.hacku.swearjar.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-//import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-//import javaFlacEncoder.FLAC_FileEncoder;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -47,9 +47,9 @@ public class SwearJarServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         //TODO Make these filenames timestamped
-        String inputFilename = "C:\\Users\\Neil\\Desktop\\test2.3gp";
-        String flacFilename = "C:\\Users\\Neil\\Desktop\\test2.flac";
-
+        long timestamp = request.getSession().getCreationTime();
+        String inputFilename = "C:\\Users\\Neil\\Desktop\\SwearJar\\SwearJar_" + timestamp + ".3gp";
+        String flacFilename = "C:\\Users\\Neil\\Desktop\\SwearJar\\SwearJar_" + timestamp + ".flac";
 
         //Read the wav file sent and store it in a .wav file
         Part part = request.getPart("Content");
@@ -59,21 +59,24 @@ public class SwearJarServlet extends HttpServlet {
         fos.flush();
         fos.close();
 
-        //encode the wav file as flac
-        //FLAC_FileEncoder encoder = new FLAC_FileEncoder();
-        //encoder.encode(new File(wavFilename), new File(flacFilename));
+        //encode the file as flac
         transcode(inputFilename, flacFilename);
-
+        
         //Do speech recogntion and return JSON
         InputStream speechRecognitionJson = getSpeechResponse(flacFilename);
-        IOUtils.copy(speechRecognitionJson, response.getOutputStream());
+        if(speechRecognitionJson != null) {
+            IOUtils.copy(speechRecognitionJson, response.getOutputStream());
+        }
 
         //Temporary files can be deleted now
         delete(inputFilename);
         delete(flacFilename);
-
     }
 
+    /**
+     * Deletes a file if it exists
+     * @param filename 
+     */
     public void delete(String filename) {
         try {
             new File(filename).delete();
@@ -122,9 +125,14 @@ public class SwearJarServlet extends HttpServlet {
      * @return SpeechResponse containing recognised speech, null if error occurs
      */
     public static InputStream getSpeechResponse(String speechFile) {
+        FileLock lock = null;
+        
         try {
+                        
             // Read speech file
-            InputStream inputStream = new FileInputStream(speechFile);
+            FileInputStream inputStream = new FileInputStream(speechFile);
+            FileChannel channel = inputStream.getChannel();
+            lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); //Wait for file to become available
             ByteArrayInputStream data = new ByteArrayInputStream(
                     IOUtils.toByteArray(inputStream));
 
@@ -142,8 +150,20 @@ public class SwearJarServlet extends HttpServlet {
             ex.printStackTrace();
         } catch (IOException ioe) {
             ioe.printStackTrace();
+        } catch(Exception ex){
+            
+            ex.printStackTrace();
+        } finally{
+            try {
+                lock.release();
+            } catch (IOException ex) {
+                Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NullPointerException npe){
+                Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, npe);
+            }
         }
-
+        
+        
         return null;
     }
 
