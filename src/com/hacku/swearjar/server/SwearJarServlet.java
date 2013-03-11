@@ -62,20 +62,52 @@ public class SwearJarServlet extends HttpServlet {
         //encode the file as flac
         transcode(inputFilename, flacFilename);
         
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
         //Do speech recogntion and return JSON
         InputStream speechRecognitionJson = getSpeechResponse(flacFilename);
-        if(speechRecognitionJson != null) {
+        if (speechRecognitionJson != null) {
             IOUtils.copy(speechRecognitionJson, response.getOutputStream());
         }
 
         //Temporary files can be deleted now
-        delete(inputFilename);
-        delete(flacFilename);
+        //delete(inputFilename);
+        //delete(flacFilename);
+    }
+
+    /**
+     * Causes the calling thread to wait for a maximum of millis for the File at
+     * filename to be created
+     *
+     * @param millis
+     * @param filename
+     */
+    private static File waitForFileCreation(String filename, int millis) {
+        while (millis > 0) {
+            try {
+                File file = new File(filename);
+                if(file.exists() && file.canRead()) {
+                    return file;
+                }
+                
+                Thread.sleep(1);
+                millis--;
+            } catch (InterruptedException ex) {
+                Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
     }
 
     /**
      * Deletes a file if it exists
-     * @param filename 
+     *
+     * @param filename
      */
     public void delete(String filename) {
         try {
@@ -125,14 +157,14 @@ public class SwearJarServlet extends HttpServlet {
      * @return SpeechResponse containing recognised speech, null if error occurs
      */
     public static InputStream getSpeechResponse(String speechFile) {
-        FileLock lock = null;
-        
+       // FileLock lock = null;
+
         try {
-                        
-            // Read speech file
-            FileInputStream inputStream = new FileInputStream(speechFile);
-            FileChannel channel = inputStream.getChannel();
-            lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); //Wait for file to become available
+            File file = waitForFileCreation(speechFile, 1000);
+            // Read speech file 
+            FileInputStream inputStream = new FileInputStream(file);
+           // FileChannel channel = inputStream.getChannel();
+            //lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); //Wait for file to become available
             ByteArrayInputStream data = new ByteArrayInputStream(
                     IOUtils.toByteArray(inputStream));
 
@@ -150,20 +182,19 @@ public class SwearJarServlet extends HttpServlet {
             ex.printStackTrace();
         } catch (IOException ioe) {
             ioe.printStackTrace();
-        } catch(Exception ex){
-            
+        } catch (Exception ex) { 
             ex.printStackTrace();
-        } finally{
-            try {
+        } finally {
+        /*    try {
                 lock.release();
             } catch (IOException ex) {
                 Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NullPointerException npe){
+            } catch (NullPointerException npe) {
                 Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, npe);
-            }
+            }*/
         }
-        
-        
+
+
         return null;
     }
 
