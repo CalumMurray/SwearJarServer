@@ -76,8 +76,8 @@ public class SwearJarServlet extends HttpServlet {
         }
 
         //Temporary files can be deleted now
-        //delete(inputFilename);
-        //delete(flacFilename);
+        delete(inputFilename);
+        delete(flacFilename);
     }
 
     /**
