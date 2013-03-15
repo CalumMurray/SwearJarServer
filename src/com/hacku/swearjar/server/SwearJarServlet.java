@@ -61,14 +61,8 @@ public class SwearJarServlet extends HttpServlet {
 
         //encode the file as flac
         transcode(inputFilename, flacFilename);
-        
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        
+
+
         //Do speech recogntion and return JSON
         InputStream speechRecognitionJson = getSpeechResponse(flacFilename);
         if (speechRecognitionJson != null) {
@@ -76,8 +70,8 @@ public class SwearJarServlet extends HttpServlet {
         }
 
         //Temporary files can be deleted now
-        delete(inputFilename);
-        delete(flacFilename);
+        //delete(inputFilename);
+        //delete(flacFilename);
     }
 
     /**
@@ -91,10 +85,15 @@ public class SwearJarServlet extends HttpServlet {
         while (millis > 0) {
             try {
                 File file = new File(filename);
-                if(file.exists() && file.canRead()) {
+                if (file.exists() && file.canRead()) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     return file;
                 }
-                
+
                 Thread.sleep(1);
                 millis--;
             } catch (InterruptedException ex) {
@@ -109,7 +108,7 @@ public class SwearJarServlet extends HttpServlet {
      *
      * @param filename
      */
-    public void delete(String filename) {
+    private static void delete(String filename) {
         try {
             new File(filename).delete();
         } catch (NullPointerException ioe) {
@@ -123,22 +122,24 @@ public class SwearJarServlet extends HttpServlet {
      * @param inputFile
      * @param outputFile
      */
-    private void transcode(String inputFile, String outputFile) {
+    private static void transcode(String inputFile, String outputFile) {
         Runtime rt = Runtime.getRuntime();
         try {
 
-            String str =
-                    "run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
+            String str ="run \"C:\\Program Files (x86)\\sox-14-4-1\\ffmpeg.exe\" -i " + //Location of vlc
+                    inputFile + " "//Location of input 
+                    + " " + outputFile;
+                    /*"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
                     inputFile + //Location of input 
-                    " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=8000}"
+                    " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=16000}"
                     + ":std{access=file, mux=raw, dst="
                     + outputFile + //Location of output
-                    "}\" vlc://quit";
+                    "}\" vlc://quit";*/
 
             Process pr = rt.exec(str);
 
             int exitStatus = pr.waitFor();
-            System.out.println("VLC exit code: " + exitStatus);
+            System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -156,14 +157,14 @@ public class SwearJarServlet extends HttpServlet {
      * @param speechFile path to the audio file
      * @return SpeechResponse containing recognised speech, null if error occurs
      */
-    public static InputStream getSpeechResponse(String speechFile) {
-       // FileLock lock = null;
+    private static InputStream getSpeechResponse(String speechFile) {
+        // FileLock lock = null;
 
         try {
             File file = waitForFileCreation(speechFile, 1000);
             // Read speech file 
             FileInputStream inputStream = new FileInputStream(file);
-           // FileChannel channel = inputStream.getChannel();
+            // FileChannel channel = inputStream.getChannel();
             //lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); //Wait for file to become available
             ByteArrayInputStream data = new ByteArrayInputStream(
                     IOUtils.toByteArray(inputStream));
@@ -182,16 +183,16 @@ public class SwearJarServlet extends HttpServlet {
             ex.printStackTrace();
         } catch (IOException ioe) {
             ioe.printStackTrace();
-        } catch (Exception ex) { 
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-        /*    try {
-                lock.release();
-            } catch (IOException ex) {
-                Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NullPointerException npe) {
-                Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, npe);
-            }*/
+            /*    try {
+             lock.release();
+             } catch (IOException ex) {
+             Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (NullPointerException npe) {
+             Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, npe);
+             }*/
         }
 
 
@@ -199,7 +200,7 @@ public class SwearJarServlet extends HttpServlet {
     }
 
     /**
-     * Sets up the post request
+     * Sets up the post request =
      *
      * @param data audio file
      * @return HttpPost object with parameters initialised to audio file
@@ -212,7 +213,7 @@ public class SwearJarServlet extends HttpServlet {
         // Specify Content and Content-Type parameters for POST request
         MultipartEntity entity = new MultipartEntity();
         entity.addPart("Content", new InputStreamBody(data, "Content"));
-        postRequest.setHeader("Content-Type", "audio/x-flac; rate=8000");
+        postRequest.setHeader("Content-Type", "audio/x-flac; rate=16000");
         postRequest.setEntity(entity);
         return postRequest;
     }
