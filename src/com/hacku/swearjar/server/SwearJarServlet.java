@@ -7,8 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -66,7 +65,9 @@ public class SwearJarServlet extends HttpServlet {
         //Do speech recogntion and return JSON
         InputStream speechRecognitionJson = getSpeechResponse(flacFilename);
         if (speechRecognitionJson != null) {
-            IOUtils.copy(speechRecognitionJson, response.getOutputStream());
+            String json = IOUtils.toString(speechRecognitionJson);
+            IOUtils.copy(IOUtils.toInputStream(json), response.getOutputStream());
+            System.out.println(json);
         }
 
         //Temporary files can be deleted now
@@ -127,7 +128,7 @@ public class SwearJarServlet extends HttpServlet {
         try {
 
             String str ="run \"C:\\Program Files (x86)\\sox-14-4-1\\ffmpeg.exe\" -i " + //Location of vlc
-                    inputFile + " "//Location of input 
+                    inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
                     + " " + outputFile;
                     /*"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
                     inputFile + //Location of input 
@@ -213,7 +214,7 @@ public class SwearJarServlet extends HttpServlet {
         // Specify Content and Content-Type parameters for POST request
         MultipartEntity entity = new MultipartEntity();
         entity.addPart("Content", new InputStreamBody(data, "Content"));
-        postRequest.setHeader("Content-Type", "audio/x-flac; rate=16000");
+        postRequest.setHeader("Content-Type", "audio/x-flac; rate=8000");
         postRequest.setEntity(entity);
         return postRequest;
     }
