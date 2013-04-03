@@ -34,13 +34,15 @@
 	</target>
 	
 	<target name="startTomcat">
-		<exec executable="${tomcatControl}"/>
+		<exec executable="${tomcatControl}">
 		<arg value="start"/>
+		<exec/>
 	</target>
 	
 	<target name="stopTomcat">
-		<exec executable="${tomcatControl}"/>
+		<exec executable="${tomcatControl}">
 		<arg value="stop"/>
+		<exec/>
 		<antcall target="warTarget"/>
 	</target>
 	
