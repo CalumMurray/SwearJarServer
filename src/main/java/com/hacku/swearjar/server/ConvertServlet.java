@@ -34,12 +34,6 @@ urlPatterns = {"/convert"})
 public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        PrintWriter out = response.getWriter();  
-        out.println("Beer Selection Advice"); 
-    }
     
     /**
      * Takes an audio file, transcodes it to flac, then performs speech
