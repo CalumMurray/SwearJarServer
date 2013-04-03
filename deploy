@@ -1,0 +1,15 @@
+#!/bin/bash
+
+TOMCAT_INIT=/etc/init.d/tomcat7;
+
+#get changes from git
+git pull;
+
+#shutdown tomcat while we redeploy
+sudo $TOMCAT_INIT stop;
+
+#build with dependencies
+sudo mvn package;
+
+#start tomcat again
+sudo $TOMCAT_INIT start;
