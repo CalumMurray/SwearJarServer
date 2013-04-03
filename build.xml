@@ -14,7 +14,7 @@
 	<property name="tomcat" value="/usr/share/tomcat7"/>
 	<property name="tomcatDeployment" value="${tomcat}/webapps"/>
 	<property name="tomcatBin" value="${tomcat}/bin"/>
-	<property name="tomcatInit" value="/etc/init.d/tomcat7"/>
+	<property name="tomcatControl" value="/etc/init.d/tomcat7"/>
 	<property name="outputWar" value="SwearJarServer.war"/>
 	<property name="base" value="."/>
 	<property name="src" value="${base}/src"/>
