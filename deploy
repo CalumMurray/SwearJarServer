@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOMCAT_INIT=/etc/init.d/tomcat7;
+TOMCAT_INIT=tomcat7;
 
 #get changes from git
 git pull;
