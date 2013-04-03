@@ -187,7 +187,7 @@ public class SwearJarServlet extends HttpServlet {
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            /*    try {
+            /*   try {
              lock.release();
              } catch (IOException ex) {
              Logger.getLogger(SwearJarServlet.class.getName()).log(Level.SEVERE, null, ex);
