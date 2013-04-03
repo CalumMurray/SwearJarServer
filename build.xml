@@ -20,7 +20,7 @@
 	<property name="src" value="${base}/src"/>
 	
 	<target name="warTarget">
-		<war destfile="{$tomcatDeployment}/${outputWar}" needxmlfile="false">
+		<war destfile="${tomcatDeployment}/${outputWar}" needxmlfile="false">
 			<fileset dir="${src}">
 				<include name="**/*.java"/>
 			</fileset>
@@ -29,7 +29,7 @@
 	</target>
 	
 	<target name="deployTarget">
-		<copy file="${base}/${outputWar}" todir="{$tomcatDeployment}"/>
+		<copy file="${base}/${outputWar}" todir="${tomcatDeployment}"/>
 		<antcall target="startTomcat"/>
 	</target>
 	
