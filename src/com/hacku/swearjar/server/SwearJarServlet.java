@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +36,12 @@ public class SwearJarServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        PrintWriter out = response.getWriter();  
+        out.println("Beer Selection Advice"); 
+    }
+    
     /**
      * Takes an audio file, transcodes it to flac, then performs speech
      * recognition. Gives a JSON response containing the recognised speech.
