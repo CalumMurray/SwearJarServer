@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -73,8 +75,8 @@ public class ConvertServlet extends HttpServlet {
         }
 
         //Temporary files can be deleted now
-        //delete(inputFilename);
-        //delete(flacFilename);
+        delete(inputFilename);
+        delete(flacFilename);
     }
 
     /**
@@ -161,14 +163,18 @@ public class ConvertServlet extends HttpServlet {
      * @return SpeechResponse containing recognised speech, null if error occurs
      */
     private static InputStream getSpeechResponse(String speechFile) {
-        // FileLock lock = null;
+        FileLock lock = null;
 
         try {
-            File file = waitForFileCreation(speechFile, 1000);
+            //File file = waitForFileCreation(speechFile, 1000);
             // Read speech file 
+            File file = new File(speechFile);
             FileInputStream inputStream = new FileInputStream(file);
-            // FileChannel channel = inputStream.getChannel();
-            //lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); //Wait for file to become available
+            
+            //Wait for file to become available
+            FileChannel channel = inputStream.getChannel();
+            lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); 
+            
             ByteArrayInputStream data = new ByteArrayInputStream(
                     IOUtils.toByteArray(inputStream));
 
@@ -189,13 +195,13 @@ public class ConvertServlet extends HttpServlet {
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            /*   try {
+            try {
              lock.release();
              } catch (IOException ex) {
              Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
              } catch (NullPointerException npe) {
              Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, npe);
-             }*/
+             }
         }
 
 
