@@ -30,11 +30,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
  */
 @WebServlet(description = "Converts incoming file to .flac format before sending to Google's ASR.  Sends json response back to app.",
 urlPatterns = {"/convert"})
-@MultipartConfig(maxFileSize = 1024 * 1024 * 1024)
+@MultipartConfig(maxFileSize = 1024 * 1024 * 32)  //Accept files upto 32MB
 public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * Takes an audio file, transcodes it to flac, then performs speech
      * recognition. Gives a JSON response containing the recognised speech.
@@ -45,10 +45,12 @@ public class ConvertServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        //TODO Make these filenames timestamped
-        long timestamp = request.getSession().getCreationTime();
-        String inputFilename = "C:\\Users\\Neil\\Desktop\\SwearJar\\SwearJar_" + timestamp + ".3gp";
-        String flacFilename = "C:\\Users\\Neil\\Desktop\\SwearJar\\SwearJar_" + timestamp + ".flac";
+        String baseFilename = "/tmp/SwearJar_"
+                + request.getSession().getCreationTime() //Timestamp
+                + "_" + request.getSession().getId();  //Session ID
+
+        String inputFilename = baseFilename + ".3gp";
+        String flacFilename = baseFilename + ".flac";
 
         //Read the wav file sent and store it in a .wav file
         Part part = request.getPart("Content");
@@ -127,15 +129,15 @@ public class ConvertServlet extends HttpServlet {
         Runtime rt = Runtime.getRuntime();
         try {
 
-            String str ="run \"C:\\Program Files (x86)\\sox-14-4-1\\ffmpeg.exe\" -i " + //Location of vlc
+            String str = "ffmpeg -i " + //Location of vlc
                     inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
                     + " " + outputFile;
-                    /*"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
-                    inputFile + //Location of input 
-                    " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=16000}"
-                    + ":std{access=file, mux=raw, dst="
-                    + outputFile + //Location of output
-                    "}\" vlc://quit";*/
+            /*"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
+             inputFile + //Location of input 
+             " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=16000}"
+             + ":std{access=file, mux=raw, dst="
+             + outputFile + //Location of output
+             "}\" vlc://quit";*/
 
             Process pr = rt.exec(str);
 

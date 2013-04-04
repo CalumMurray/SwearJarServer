@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#args check
+if [ $# -ne 2 ]
+then
+	echo "usage: $0 inputfile outputfile"
+	exit 1;
+fi
+
+#Create temporary directories
+SILENCE_DIR=`mktemp -d`;
+VAD_DIR=`mktemp -d`;
+
+#Split the input file into several new files at silence
+sox -t ffmpeg "$1" "$SILENCE_DIR/$2" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart
+
+#Remove stuff which isn't speech
+for FILENAME in `ls $SILENCE_DIR`; do
+	sox "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse
+done
+
+#Split remaining oversized files
+for FILENAME in `ls $VAD_DIR`; do
+	sox "$VAD_DIR/$FILENAME" "$FILENAME" trim 0 13 : newfile : restart
+done
+
+#remove files which are <= 114 bytes in size
+
+#Delete temporary directories
+rm -r $SILENCE_DIR;
+rm -r $VAD_DIR;
