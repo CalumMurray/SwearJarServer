@@ -51,8 +51,10 @@ public class ConvertServlet extends HttpServlet {
                 + request.getSession().getCreationTime() //Timestamp
                 + "_" + request.getSession().getId();  //Session ID
 
-        String inputFilename = baseFilename + ".3gp";
-        String flacFilename = baseFilename + ".flac";
+        String inputExt = ".3gp";
+        String outputExt = ".flac";
+        String inputFilename = baseFilename + inputExt;
+        String flacFilename = baseFilename + outputExt;
 
         //Read the wav file sent and store it in a .wav file
         Part part = request.getPart("Content");
@@ -63,15 +65,18 @@ public class ConvertServlet extends HttpServlet {
         fos.close();
 
         //encode the file as flac
-        transcode(inputFilename, flacFilename);
+        String[] outputFilenames = transcode(baseFilename, inputExt, outputExt);
 
 
         //Do speech recogntion and return JSON
-        InputStream speechRecognitionJson = getSpeechResponse(flacFilename);
-        if (speechRecognitionJson != null) {
-            String json = IOUtils.toString(speechRecognitionJson);
-            IOUtils.copy(IOUtils.toInputStream(json), response.getOutputStream());
-            System.out.println(json);
+        for(String filename : outputFilenames){
+            //TODO create new threads here
+            InputStream speechRecognitionJson = getSpeechResponse(filename);
+            if (speechRecognitionJson != null) {
+                String json = IOUtils.toString(speechRecognitionJson);
+                IOUtils.copy(IOUtils.toInputStream(json), response.getOutputStream());
+                System.out.println(json);
+            }
         }
 
         //Temporary files can be deleted now
@@ -126,14 +131,18 @@ public class ConvertServlet extends HttpServlet {
      *
      * @param inputFile
      * @param outputFile
+     * @return array of files created
      */
-    private static void transcode(String inputFile, String outputFile) {
+    private static String[] transcode(String baseFilename, String inputExt, String outputExt) {
         Runtime rt = Runtime.getRuntime();
+        String output = "";
+        
         try {
 
-            String str = "ffmpeg -i " + //Location of vlc
+            String str = "sox_splitter " + baseFilename + " " + inputExt + " " + outputExt;
+                    /*"ffmpeg -i " + //Location of vlc
                     inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
-                    + " " + outputFile;
+                    + " " + outputFile;*/
             /*"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
              inputFile + //Location of input 
              " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=16000}"
@@ -142,8 +151,10 @@ public class ConvertServlet extends HttpServlet {
              "}\" vlc://quit";*/
 
             Process pr = rt.exec(str);
-
+        
             int exitStatus = pr.waitFor();
+            output = IOUtils.toString(pr.getInputStream());
+            
             System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
 
         } catch (IOException e) {
@@ -151,6 +162,8 @@ public class ConvertServlet extends HttpServlet {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            return output.split("\n");
         }
     }
 
