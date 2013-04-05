@@ -3,7 +3,7 @@
 cd ~/SwearJarServer
 
 TOMCAT_INIT=/etc/init.d/tomcat7;
-OLD_DEPLOYMENT=/usr/share/tomcat7/webapps/ROOT
+OLD_DEPLOYMENT=/var/lib/tomcat7/webapps/ROOT
 
 #get changes from git
 echo "Updating from remote repository..."

@@ -60,7 +60,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
                 <configuration>
-					<outputDirectory>/usr/share/tomcat7/webapps</outputDirectory>
+					<outputDirectory>/var/lib/tomcat7/webapps</outputDirectory>
 					<warName>ROOT</warName>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
