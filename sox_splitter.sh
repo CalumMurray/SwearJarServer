@@ -25,7 +25,7 @@ for FILENAME in `ls $VAD_DIR`; do
 done
 
 #Output a list of the files created with their absolute path
-find `pwd` -name "$1*$3";
+find `pwd` -name "`pwd`$1*$3";
 
 #remove files which are <= 114 bytes in size
 
