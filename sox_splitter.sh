@@ -12,13 +12,13 @@ SILENCE_DIR=`mktemp -d`;
 VAD_DIR=`mktemp -d`;
 
 #Convert to flac
-ffmpeg -i "$1$2" -ar 8000 -sample_fmt s16 "$1$2"
+ffmpeg -i "$1$2" -ar 8000 -sample_fmt s16 "$1$3"
 					
 #Split the input file into several new files at silence
 sox "FLAC_FILE" "$SILENCE_DIR/$2$3" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart
 
 #We got the parts we need so remove the full converted file
-rm $1$2
+rm $1$3
 
 #Remove stuff which isn't speech
 for FILENAME in `ls $SILENCE_DIR`; do
