@@ -12,7 +12,7 @@ SILENCE_DIR=`mktemp -d`;
 VAD_DIR=`mktemp -d`;
 
 #Split the input file into several new files at silence
-sox -t ffmpeg "$1$3" "$SILENCE_DIR/$2$3" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart
+sox -t ffmpeg "$1$2" "$SILENCE_DIR/$1$3" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart
 
 #Remove stuff which isn't speech
 for FILENAME in `ls $SILENCE_DIR`; do
