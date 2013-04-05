@@ -5,7 +5,11 @@ OLD_DEPLOYMENT=/usr/share/tomcat7/webapps/ROOT
 
 #get changes from git
 echo "Updating from remote repository..."
+git reset --hard origin/master;
 git pull;
+
+chmod +x deploy
+chmod +x sox_splitter
 
 #shutdown tomcat while we redeploy
 echo "Stopping tomcat..."
