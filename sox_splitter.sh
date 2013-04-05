@@ -36,5 +36,5 @@ find `pwd` -name "$1*$3";
 #remove files which are <= 114 bytes in size
 
 #Delete temporary directories
-rm -r $SILENCE_DIR
-rm -r $VAD_DIR
+#rm -r $SILENCE_DIR
+#rm -r $VAD_DIR
