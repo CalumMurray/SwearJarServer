@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ~/SwearJarServer
+
 TOMCAT_INIT=/etc/init.d/tomcat7;
 OLD_DEPLOYMENT=/usr/share/tomcat7/webapps/ROOT
 
