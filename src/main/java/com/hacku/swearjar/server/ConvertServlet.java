@@ -67,6 +67,8 @@ public class ConvertServlet extends HttpServlet {
         //encode the file as flac
         String[] outputFilenames = transcode(baseFilename, inputExt, outputExt);
 
+        for(String filename : outputFilenames)
+        System.out.println(filename);
 
         //Do speech recogntion and return JSON
         for(String filename : outputFilenames){
@@ -80,8 +82,8 @@ public class ConvertServlet extends HttpServlet {
         }
 
         //Temporary files can be deleted now
-        delete(inputFilename);
-        delete(flacFilename);
+        //delete(inputFilename);
+        //delete(flacFilename);
     }
 
     /**
