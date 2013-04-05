@@ -7,6 +7,9 @@ then
 	exit 1;
 fi
 
+#Make file readable
+sudo chmod +r $1$2
+
 #Create temporary directories
 SILENCE_DIR=`mktemp -d`;
 VAD_DIR=`mktemp -d`;
@@ -30,5 +33,5 @@ find `pwd` -maxdepth 1 -name "$1*$3";
 #remove files which are <= 114 bytes in size
 
 #Delete temporary directories
-rm -r $SILENCE_DIR;
-rm -r $VAD_DIR;
+#rm -r $SILENCE_DIR;
+#rm -r $VAD_DIR;
