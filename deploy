@@ -9,7 +9,7 @@ git reset --hard origin/master;
 git pull;
 
 chmod +x deploy
-chmod +x sox_splitter
+chmod +x sox_splitter.sh
 
 #shutdown tomcat while we redeploy
 echo "Stopping tomcat..."
