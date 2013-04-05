@@ -13,18 +13,19 @@ sudo chmod +r $1$2
 #Create temporary directories
 SILENCE_DIR=`mktemp -d`;
 VAD_DIR=`mktemp -d`;
+SOX_PATH=/usr/bin/sox;
 
 #Split the input file into several new files at silence
-sox -t ffmpeg "$1$2" "$SILENCE_DIR/$1$3" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart &> output
+$SOX_PATH -t ffmpeg "$1$2" "$SILENCE_DIR/$1$3" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart &> output
 
 #Remove stuff which isn't speech
 for FILENAME in `ls $SILENCE_DIR`; do
-	sox "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse &>> output
+	$SOX_PATH "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse &>> output
 done
 
 #Split remaining oversized files
 for FILENAME in `ls $VAD_DIR`; do
-	sox "$VAD_DIR/$FILENAME" "$FILENAME" trim 0 13 : newfile : restart &>> output
+	$SOX_PATH "$VAD_DIR/$FILENAME" "$FILENAME" trim 0 13 : newfile : restart &>> output
 done
 
 #Output a list of the files created with their absolute path
