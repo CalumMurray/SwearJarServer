@@ -162,6 +162,11 @@ public class ConvertServlet extends HttpServlet {
             fos.flush();
             fos.close();
             
+            FileOutputStream eos = new FileOutputStream("/tmp/errors");
+            IOUtils.copy(pr.getErrorStream(), eos);
+            eos.flush();
+            eos.close();
+            
             //output = IOUtils.toString(pr.getInputStream());
             
             System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
