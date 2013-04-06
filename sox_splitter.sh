@@ -16,6 +16,7 @@ VAD_DIR=`mktemp -d`;
 SOX_PATH=/usr/bin/sox;
 
 #Split the input file into several new files at silence
+$SOX_PATH
 echo "removing silence..."
 $SOX_PATH -t ffmpeg "$1$2" "$SILENCE_DIR/$1$3" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart #&>> /tmp/output
 
