@@ -18,20 +18,20 @@ VAD_DIR=`mktemp -d`;
 SOX_PATH=/usr/bin/sox;
 
 #Split the input file into several new files at silence
-$SOX_PATH -V6 -t ffmpeg "$2$3" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart #&>> /tmp/output
+$SOX_PATH -t ffmpeg "$2$3" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
 
 #Remove stuff which isn't speech
 for FILENAME in `ls $SILENCE_DIR`; do
-	$SOX_PATH -V6 "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse #&>> /tmp/output
+	$SOX_PATH "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse 1>&2 
 done
 
 #Split remaining oversized files
 for FILENAME in `ls $VAD_DIR`; do
-	$SOX_PATH -V6 "$VAD_DIR/$FILENAME" "$FILENAME" trim 0 13 : newfile : restart #&>> /tmp/output
+	$SOX_PATH "$VAD_DIR/$FILENAME" "$FILENAME" trim 0 13 : newfile : restart 1>&2 
 done
 
 #Output a list of the files created with their absolute path
-find `pwd` -maxdepth 1 -name "$2*$4"; 
+find `pwd` -maxdepth 1 -name "$2*$4";
 
 #remove files which are <= 114 bytes in size
 
