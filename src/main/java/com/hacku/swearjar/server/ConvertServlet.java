@@ -141,7 +141,7 @@ public class ConvertServlet extends HttpServlet {
         
         try {
 
-            String str = "sox_splitter " + baseFilename + " " + inputExt + " " + outputExt;
+            String str = "sox_splitter " + baseFilename + " " + inputExt + " " + outputExt + " &>> /tmp/output";
                     /*"ffmpeg -i " + //Location of vlc
                     inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
                     + " " + outputFile;*/
