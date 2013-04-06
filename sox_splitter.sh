@@ -31,10 +31,10 @@ for FILENAME in `ls $VAD_DIR`; do
 done
 
 #Output a list of the files created with their absolute path
-find `pwd` -maxdepth 1 -name "$1*$3"; 
+find `pwd` -maxdepth 1 -name "$2*$4"; 
 
 #remove files which are <= 114 bytes in size
 
 #Delete temporary directories
-#rm -r $SILENCE_DIR;
-#rm -r $VAD_DIR;
+rm -r $SILENCE_DIR;
+rm -r $VAD_DIR;
