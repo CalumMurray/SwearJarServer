@@ -18,19 +18,14 @@ VAD_DIR=`mktemp -d`;
 SOX_PATH=/usr/bin/sox;
 
 #Split the input file into several new files at silence
-echo "$1 $2 $3"
-
-echo "removing silence..."
-$SOX_PATH -V6 -t ffmpeg "$2$3" "$SILENCE_DIR/$1$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart #&>> /tmp/output
+$SOX_PATH -V6 -t ffmpeg "$2$3" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart #&>> /tmp/output
 
 #Remove stuff which isn't speech
-echo "removing non-speech"
 for FILENAME in `ls $SILENCE_DIR`; do
 	$SOX_PATH -V6 "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse #&>> /tmp/output
 done
 
 #Split remaining oversized files
-echo "splitting remaing oversized files"
 for FILENAME in `ls $VAD_DIR`; do
 	$SOX_PATH -V6 "$VAD_DIR/$FILENAME" "$FILENAME" trim 0 13 : newfile : restart #&>> /tmp/output
 done
