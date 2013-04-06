@@ -141,9 +141,8 @@ public class ConvertServlet extends HttpServlet {
         
         try {
 
-            String str = "echo test &>> /tmp/output";
-                    //"sox_splitter " + baseFilename + " " + inputExt + " " + outputExt + " &>> /tmp/output";
-            
+            String str = "sox_splitter " + baseFilename + " " + inputExt + " " + outputExt + " &>> /tmp/output";
+            //"echo test &>> /tmp/output";
                     /*"ffmpeg -i " + //Location of vlc
                     inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
                     + " " + outputFile;*/
@@ -157,7 +156,13 @@ public class ConvertServlet extends HttpServlet {
             Process pr = rt.exec(str);
         
             int exitStatus = pr.waitFor();
-            output = IOUtils.toString(pr.getInputStream());
+            
+            FileOutputStream fos = new FileOutputStream("/tmp/output");
+            IOUtils.copy(pr.getInputStream(), fos);
+            fos.flush();
+            fos.close();
+            
+            //output = IOUtils.toString(pr.getInputStream());
             
             System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
 
@@ -166,7 +171,7 @@ public class ConvertServlet extends HttpServlet {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
+        } finally {            
             return output.split("\n");
         }
     }
