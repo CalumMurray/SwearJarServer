@@ -54,7 +54,7 @@ public class ConvertServlet extends HttpServlet {
 
         String inputExt = ".3gp";
         String outputExt = ".flac";
-        String inputFilename = baseFilename + inputExt;
+        String inputFilename = baseDir + baseFilename + inputExt;
         String flacFilename = baseFilename + outputExt;
 
         //Read the wav file sent and store it in a .wav file
