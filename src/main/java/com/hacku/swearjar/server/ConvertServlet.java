@@ -47,7 +47,8 @@ public class ConvertServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        String baseFilename = "/tmp/SwearJar_"
+        String baseDir = "/tmp";
+        String baseFilename = "SwearJar_"
                 + request.getSession().getCreationTime() //Timestamp
                 + "_" + request.getSession().getId();  //Session ID
 
@@ -65,7 +66,7 @@ public class ConvertServlet extends HttpServlet {
         fos.close();
 
         //encode the file as flac
-        String[] outputFilenames = transcode(baseFilename, inputExt, outputExt);
+        String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
         for(String filename : outputFilenames)
         System.out.println(filename);
@@ -135,13 +136,13 @@ public class ConvertServlet extends HttpServlet {
      * @param outputFile
      * @return array of files created
      */
-    private static String[] transcode(String baseFilename, String inputExt, String outputExt) {
+    private static String[] transcode(String baseDir, String baseFilename, String inputExt, String outputExt) {
         Runtime rt = Runtime.getRuntime();
         String output = "";
         
         try {
 
-            String str = "sox_splitter " + baseFilename + " " + inputExt + " " + outputExt;
+            String str = "sox_splitter " + baseDir + " " + baseFilename + " " + inputExt + " " + outputExt;
             //"echo test &>> /tmp/output";
                     /*"ffmpeg -i " + //Location of vlc
                     inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
