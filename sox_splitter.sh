@@ -10,7 +10,7 @@ fi
 cd $1
 
 #Make file readable
-sudo chmod +r $1$2
+sudo chmod +r $2
 
 #Create temporary directories
 SILENCE_DIR=`mktemp -d`;
@@ -21,7 +21,7 @@ SOX_PATH=/usr/bin/sox;
 echo "$1 $2 $3"
 
 echo "removing silence..."
-$SOX_PATH -V6 -t ffmpeg "$1$2" "$SILENCE_DIR/$1$3" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart #&>> /tmp/output
+$SOX_PATH -V6 -t ffmpeg "$2$3" "$SILENCE_DIR/$1$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart #&>> /tmp/output
 
 #Remove stuff which isn't speech
 echo "removing non-speech"
