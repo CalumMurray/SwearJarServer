@@ -119,7 +119,7 @@ public class ConvertServlet extends HttpServlet {
 
         SpeechResponse aggregateSpeech = new SpeechResponse();
         //Do speech recogntion and return JSON
-        for (String filename : speechFiles) {
+        for (String filename : speechFiles) {  
             //TODO create new threads here
 
             SpeechResponse speech = getSpeechResponse(filename);
@@ -273,7 +273,7 @@ public class ConvertServlet extends HttpServlet {
             log("exceptionIOE", ioe.getMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
-            log("exception", ex.getMessage());
+            log("exception", ex.toString());
         } finally {
             try {
                 lock.release();
