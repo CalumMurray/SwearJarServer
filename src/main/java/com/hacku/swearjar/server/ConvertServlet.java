@@ -267,7 +267,7 @@ public class ConvertServlet extends HttpServlet {
             HttpResponse response = client.execute(postRequest);
 
             except = except.concat("7");
-            log("response_" + speechFilename, packageResponse(response).toJson());
+            log("response_" + speechFilename, "");
             
             //return the JSON stream
             except = except.concat("8");
