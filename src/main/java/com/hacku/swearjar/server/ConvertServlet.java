@@ -202,7 +202,7 @@ public class ConvertServlet extends HttpServlet {
 
             int exitStatus = pr.waitFor();
 
-            IOUtils.toString(pr.getInputStream(), output);
+            output = IOUtils.toString(pr.getInputStream());
             
             /*FileOutputStream fos = new FileOutputStream("/tmp/output");
             IOUtils.copy(pr.getInputStream(), fos);
