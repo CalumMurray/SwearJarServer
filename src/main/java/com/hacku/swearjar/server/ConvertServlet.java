@@ -98,7 +98,7 @@ public class ConvertServlet extends HttpServlet {
         
         //Do speech recogntion and return JSON
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
-
+        log("aggregateSpeech", aggregateSpeech.toJson());
         response.getOutputStream().print(aggregateSpeech.toJson());
         //IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), response.getOutputStream());
 
@@ -265,9 +265,6 @@ public class ConvertServlet extends HttpServlet {
             HttpClient client = new DefaultHttpClient();
             except = except.concat("6");
             HttpResponse response = client.execute(postRequest);
-
-            except = except.concat("7");
-            log("response_" + speechFilename, "");
             
             //return the JSON stream
             except = except.concat("8");
