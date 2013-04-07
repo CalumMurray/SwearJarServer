@@ -267,13 +267,13 @@ public class ConvertServlet extends HttpServlet {
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
-            log("exceptionFNF", "");
+            log("exceptionFNF", ex.getMessage());
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            log("exceptionIOE", "");
+            log("exceptionIOE", ioe.getMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
-            log("exception", "");
+            log("exception", ex.getMessage());
         } finally {
             try {
                 lock.release();
