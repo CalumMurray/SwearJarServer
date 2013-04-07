@@ -39,6 +39,26 @@ public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    private static void utteranceToFile(String filename, SpeechResponse speech) {
+        FileOutputStream eos = null;
+        try {
+            eos = new FileOutputStream("/tmp/utterance_" + filename);
+            IOUtils.copy(IOUtils.toInputStream(speech.toJson()), eos);
+            eos.flush();
+            eos.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ioe) {
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ioe);
+        } finally {
+            try {
+                eos.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
     /**
      * Takes an audio file, transcodes it to flac, then performs speech
      * recognition. Gives a JSON response containing the recognised speech.
@@ -99,26 +119,6 @@ public class ConvertServlet extends HttpServlet {
             SpeechResponse speech = getSpeechResponse(filename);
             if (speech != null) {
                 aggregateSpeech.concat(speech);
-
-                
-                FileOutputStream eos = null;
-                try {
-                    eos = new FileOutputStream("/tmp/utterance_" + filename);
-                    IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), eos);
-                    eos.flush();
-                    eos.close();
-                    return aggregateSpeech;
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ioe) {
-                    Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ioe);
-                } finally {
-                    try {
-                        eos.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
             }
         }
         return aggregateSpeech;
@@ -225,16 +225,16 @@ public class ConvertServlet extends HttpServlet {
      * POST. Packages the JSON response from Google into a SpeechResponse
      * object.
      *
-     * @param speechFile path to the audio file
+     * @param speechFilename path to the audio file
      * @return SpeechResponse containing recognised speech, null if error occurs
      */
-    private static SpeechResponse getSpeechResponse(String speechFile) {
+    private static SpeechResponse getSpeechResponse(String speechFilename) {
         FileLock lock = null;
 
         try {
             //File file = waitForFileCreation(speechFile, 1000);
             // Read speech file 
-            File file = new File(speechFile);
+            File file = new File(speechFilename);
             FileInputStream inputStream = new FileInputStream(file);
 
             //Wait for file to become available
@@ -251,6 +251,8 @@ public class ConvertServlet extends HttpServlet {
             HttpClient client = new DefaultHttpClient();
             HttpResponse response = client.execute(postRequest);
 
+            utteranceToFile(speechFilename, packageResponse(response));
+            
             //return the JSON stream
             return packageResponse(response);
 
