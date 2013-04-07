@@ -93,7 +93,7 @@ public class ConvertServlet extends HttpServlet {
         String filenames = "";
         for(int i=0; i<outputFilenames.length; i++)
             filenames = filenames.concat(outputFilenames[i] + "\n");
-        log("outputFilenames", outputFilenames.toString());
+        log("outputFilenames", filenames);
         
         
         //Do speech recogntion and return JSON
