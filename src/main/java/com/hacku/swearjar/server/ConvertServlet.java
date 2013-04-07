@@ -283,7 +283,7 @@ public class ConvertServlet extends HttpServlet {
             ex.printStackTrace();
             log("exception", ex.toString());
         } finally {
-            log("exception_" + speechFilename, except + "\n");
+            log("except", except);
             /*try {
                 lock.release();
             } catch (IOException ex) {
