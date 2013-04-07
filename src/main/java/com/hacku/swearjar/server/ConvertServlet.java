@@ -239,30 +239,38 @@ public class ConvertServlet extends HttpServlet {
      */
     private static SpeechResponse getSpeechResponse(String speechFilename) {
         FileLock lock = null;
+        String except = "";
 
         try {
+            except = except.concat("1");
             File file = waitForFileCreation(speechFilename, 1000);
             // Read speech file 
             //File file = new File(speechFilename);
+            except = except.concat("2");
             FileInputStream inputStream = new FileInputStream(file);
 
             //Wait for file to become available
             //FileChannel channel = inputStream.getChannel();
             //lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); 
-
+            except = except.concat("3");
             ByteArrayInputStream data = new ByteArrayInputStream(
                     IOUtils.toByteArray(inputStream));
 
             // Set up the POST request
+            except = except.concat("4");
             HttpPost postRequest = getPost(data);
 
             // Do the request to google
+            except = except.concat("5");
             HttpClient client = new DefaultHttpClient();
+            except = except.concat("6");
             HttpResponse response = client.execute(postRequest);
 
+            except = except.concat("7");
             log("response_" + speechFilename, packageResponse(response).toJson());
             
             //return the JSON stream
+            except = except.concat("8");
             return packageResponse(response);
 
         } catch (FileNotFoundException ex) {
@@ -273,7 +281,7 @@ public class ConvertServlet extends HttpServlet {
             log("exceptionIOE", ioe.getMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
-            log("exception", ex.toString());
+            log("exception_" + speechFilename, ex.toString() + " " + except + "\n");
         } finally {
             try {
                 lock.release();
