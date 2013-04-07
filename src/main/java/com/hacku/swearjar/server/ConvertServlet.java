@@ -72,32 +72,54 @@ public class ConvertServlet extends HttpServlet {
 
         //Do speech recogntion and return JSON
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
-        
-        IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), response.getOutputStream());
+
+        response.getOutputStream().print(aggregateSpeech.toJson());
+        //IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), response.getOutputStream());
 
         //Temporary files can be deleted now
-        //delete(inputFilename);
-        //delete(flacFilename);
+        /*delete(inputFilename);
+         for(String filename : outputFilenames)
+         delete(filename);*/
     }
-    
+
     /**
-     * Gets an aggregate SpeechResponse object based on the speech contained in 
+     * Gets an aggregate SpeechResponse object based on the speech contained in
      * multiple flac files
-     * 
+     *
      * @param speechFiles
-     * @return 
+     * @return
      */
     private static SpeechResponse getSpeechResponse(String[] speechFiles) {
         
         SpeechResponse aggregateSpeech = new SpeechResponse();
-
         //Do speech recogntion and return JSON
         for (String filename : speechFiles) {
             //TODO create new threads here
-            
+
             SpeechResponse speech = getSpeechResponse(filename);
             if (speech != null) {
                 aggregateSpeech.concat(speech);
+            }
+        }
+
+        FileOutputStream eos = null;
+        try {
+            eos = new FileOutputStream("/tmp/utterance");
+            IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.getBestUtterance()), eos);
+            eos.flush();
+            eos.close();
+            return aggregateSpeech;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        catch (IOException ioe){
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ioe);
+        }
+        finally {
+            try {
+                eos.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -110,7 +132,7 @@ public class ConvertServlet extends HttpServlet {
      *
      * @param millis
      * @param filename
-     * @deprecated 
+     * @deprecated
      */
     private static File waitForFileCreation(String filename, int millis) {
         while (millis > 0) {
