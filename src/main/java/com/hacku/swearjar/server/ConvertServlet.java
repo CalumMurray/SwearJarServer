@@ -202,11 +202,13 @@ public class ConvertServlet extends HttpServlet {
 
             int exitStatus = pr.waitFor();
 
-            FileOutputStream fos = new FileOutputStream("/tmp/output");
+            IOUtils.toString(pr.getInputStream(), output);
+            
+            /*FileOutputStream fos = new FileOutputStream("/tmp/output");
             IOUtils.copy(pr.getInputStream(), fos);
             fos.flush();
             fos.close();
-
+*/
             FileOutputStream eos = new FileOutputStream("/tmp/errors");
             IOUtils.copy(pr.getErrorStream(), eos);
             eos.flush();
@@ -222,7 +224,7 @@ public class ConvertServlet extends HttpServlet {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            return output.split("\\n");
+            return output.split("\n");
         }
     }
 
