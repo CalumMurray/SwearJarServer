@@ -121,7 +121,7 @@ public class ConvertServlet extends HttpServlet {
         //Do speech recogntion and return JSON
         for (String filename : speechFiles) {  
             //TODO create new threads here
-
+            log("file", filename);
             SpeechResponse speech = getSpeechResponse(filename);
             if (speech != null) {
                 aggregateSpeech.concat(speech);
