@@ -42,7 +42,7 @@ public class ConvertServlet extends HttpServlet {
     private static void log(String filename, String output) {
         FileOutputStream eos = null;
         try {
-            eos = new FileOutputStream("/tmp/utterance_" + filename);
+            eos = new FileOutputStream("/tmp/" + filename);
             IOUtils.copy(IOUtils.toInputStream(output), eos);
             eos.flush();
             eos.close();
@@ -93,7 +93,7 @@ public class ConvertServlet extends HttpServlet {
         String filenames = "";
         for(String filename: outputFilenames)
             filenames = filenames.concat(filename + "\n");
-        log("/tmp/outputFilenames", outputFilenames.toString());
+        log("outputFilenames", outputFilenames.toString());
         
         
         //Do speech recogntion and return JSON
@@ -224,7 +224,7 @@ public class ConvertServlet extends HttpServlet {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            log("/tmp/output", output);
+            log("output", output);
             return output.split("\n");
         }
     }
