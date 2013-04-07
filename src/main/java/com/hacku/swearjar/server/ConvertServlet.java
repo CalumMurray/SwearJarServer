@@ -121,7 +121,6 @@ public class ConvertServlet extends HttpServlet {
         //Do speech recogntion and return JSON
         for (String filename : speechFiles) {  
             //TODO create new threads here
-            log("file", filename);
             SpeechResponse speech = getSpeechResponse(filename);
             if (speech != null) {
                 aggregateSpeech.concat(speech);
@@ -242,6 +241,7 @@ public class ConvertServlet extends HttpServlet {
         String except = "";
 
         try {
+            log("file", speechFilename);
             except = except.concat("1");
             File file = waitForFileCreation(speechFilename, 1000);
             // Read speech file 
@@ -284,13 +284,13 @@ public class ConvertServlet extends HttpServlet {
             log("exception", ex.toString());
         } finally {
             log("exception_" + speechFilename, except + "\n");
-            try {
+            /*try {
                 lock.release();
             } catch (IOException ex) {
                 Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
             } catch (NullPointerException npe) {
                 Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, npe);
-            }
+            }*/
         }
         return null;
     }
