@@ -241,14 +241,14 @@ public class ConvertServlet extends HttpServlet {
         FileLock lock = null;
 
         try {
-            //File file = waitForFileCreation(speechFile, 1000);
+            File file = waitForFileCreation(speechFilename, 1000);
             // Read speech file 
-            File file = new File(speechFilename);
+            //File file = new File(speechFilename);
             FileInputStream inputStream = new FileInputStream(file);
 
             //Wait for file to become available
-            FileChannel channel = inputStream.getChannel();
-            lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); 
+            //FileChannel channel = inputStream.getChannel();
+            //lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); 
 
             ByteArrayInputStream data = new ByteArrayInputStream(
                     IOUtils.toByteArray(inputStream));
