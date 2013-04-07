@@ -39,11 +39,11 @@ public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private static void utteranceToFile(String filename, SpeechResponse speech) {
+    private static void log(String filename, String output) {
         FileOutputStream eos = null;
         try {
             eos = new FileOutputStream("/tmp/utterance_" + filename);
-            IOUtils.copy(IOUtils.toInputStream(speech.toJson()), eos);
+            IOUtils.copy(IOUtils.toInputStream(output), eos);
             eos.flush();
             eos.close();
         } catch (FileNotFoundException ex) {
@@ -90,6 +90,12 @@ public class ConvertServlet extends HttpServlet {
         //encode the file as flac
         String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
+        String filenames = "";
+        for(String filename: outputFilenames)
+            filenames = filenames.concat(filename + "\n");
+        log("/tmp/outputFilenames", outputFilenames.toString());
+        
+        
         //Do speech recogntion and return JSON
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
 
@@ -251,7 +257,7 @@ public class ConvertServlet extends HttpServlet {
             HttpClient client = new DefaultHttpClient();
             HttpResponse response = client.execute(postRequest);
 
-            utteranceToFile(speechFilename, packageResponse(response));
+            log(speechFilename, packageResponse(response).toJson());
             
             //return the JSON stream
             return packageResponse(response);
