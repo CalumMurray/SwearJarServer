@@ -91,8 +91,8 @@ public class ConvertServlet extends HttpServlet {
         String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
         String filenames = "";
-        for(String filename: outputFilenames)
-            filenames = filenames.concat(filename + "\n");
+        for(int i=0; i<outputFilenames.length; i++)
+            filenames = filenames.concat(outputFilenames[i] + "\n");
         log("outputFilenames", outputFilenames.toString());
         
         
