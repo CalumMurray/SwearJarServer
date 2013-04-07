@@ -224,6 +224,7 @@ public class ConvertServlet extends HttpServlet {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
+            log("/tmp/output", output);
             return output.split("\n");
         }
     }
