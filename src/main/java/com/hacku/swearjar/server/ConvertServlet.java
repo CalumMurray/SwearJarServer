@@ -1,5 +1,7 @@
 package com.hacku.swearjar.server;
 
+import com.google.gson.Gson;
+import com.hacku.swearjar.speechapi.SpeechResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,7 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.logging.Level;
@@ -68,23 +70,38 @@ public class ConvertServlet extends HttpServlet {
         //encode the file as flac
         String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
-        for(String filename : outputFilenames)
-        System.out.println(filename);
-
         //Do speech recogntion and return JSON
-        for(String filename : outputFilenames){
-            //TODO create new threads here
-            InputStream speechRecognitionJson = getSpeechResponse(filename);
-            if (speechRecognitionJson != null) {
-                String json = IOUtils.toString(speechRecognitionJson);
-                IOUtils.copy(IOUtils.toInputStream(json), response.getOutputStream());
-                System.out.println(json);
-            }
-        }
+        SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
+        
+        IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), response.getOutputStream());
 
         //Temporary files can be deleted now
         //delete(inputFilename);
         //delete(flacFilename);
+    }
+    
+    /**
+     * Gets an aggregate SpeechResponse object based on the speech contained in 
+     * multiple flac files
+     * 
+     * @param speechFiles
+     * @return 
+     */
+    private static SpeechResponse getSpeechResponse(String[] speechFiles) {
+        
+        SpeechResponse aggregateSpeech = new SpeechResponse();
+
+        //Do speech recogntion and return JSON
+        for (String filename : speechFiles) {
+            //TODO create new threads here
+            
+            SpeechResponse speech = getSpeechResponse(filename);
+            if (speech != null) {
+                aggregateSpeech.concat(speech);
+            }
+        }
+        
+        return aggregateSpeech;
     }
 
     /**
@@ -93,6 +110,7 @@ public class ConvertServlet extends HttpServlet {
      *
      * @param millis
      * @param filename
+     * @deprecated 
      */
     private static File waitForFileCreation(String filename, int millis) {
         while (millis > 0) {
@@ -139,14 +157,14 @@ public class ConvertServlet extends HttpServlet {
     private static String[] transcode(String baseDir, String baseFilename, String inputExt, String outputExt) {
         Runtime rt = Runtime.getRuntime();
         String output = "";
-        
+
         try {
 
             String str = "sox_splitter " + baseDir + " " + baseFilename + " " + inputExt + " " + outputExt;
             //"echo test &>> /tmp/output";
                     /*"ffmpeg -i " + //Location of vlc
-                    inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
-                    + " " + outputFile;*/
+             inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
+             + " " + outputFile;*/
             /*"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
              inputFile + //Location of input 
              " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=16000}"
@@ -155,21 +173,21 @@ public class ConvertServlet extends HttpServlet {
              "}\" vlc://quit";*/
 
             Process pr = rt.exec(str);
-        
+
             int exitStatus = pr.waitFor();
-            
+
             FileOutputStream fos = new FileOutputStream("/tmp/output");
             IOUtils.copy(pr.getInputStream(), fos);
             fos.flush();
             fos.close();
-            
+
             FileOutputStream eos = new FileOutputStream("/tmp/errors");
             IOUtils.copy(pr.getErrorStream(), eos);
             eos.flush();
             eos.close();
-            
+
             //output = IOUtils.toString(pr.getInputStream());
-            
+
             System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
 
         } catch (IOException e) {
@@ -177,7 +195,7 @@ public class ConvertServlet extends HttpServlet {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {            
+        } finally {
             return output.split("\n");
         }
     }
@@ -190,7 +208,7 @@ public class ConvertServlet extends HttpServlet {
      * @param speechFile path to the audio file
      * @return SpeechResponse containing recognised speech, null if error occurs
      */
-    private static InputStream getSpeechResponse(String speechFile) {
+    private static SpeechResponse getSpeechResponse(String speechFile) {
         FileLock lock = null;
 
         try {
@@ -198,11 +216,11 @@ public class ConvertServlet extends HttpServlet {
             // Read speech file 
             File file = new File(speechFile);
             FileInputStream inputStream = new FileInputStream(file);
-            
+
             //Wait for file to become available
             FileChannel channel = inputStream.getChannel();
             lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); 
-            
+
             ByteArrayInputStream data = new ByteArrayInputStream(
                     IOUtils.toByteArray(inputStream));
 
@@ -214,7 +232,7 @@ public class ConvertServlet extends HttpServlet {
             HttpResponse response = client.execute(postRequest);
 
             //return the JSON stream
-            return response.getEntity().getContent();
+            return packageResponse(response);
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
@@ -224,15 +242,13 @@ public class ConvertServlet extends HttpServlet {
             ex.printStackTrace();
         } finally {
             try {
-             lock.release();
-             } catch (IOException ex) {
-             Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-             } catch (NullPointerException npe) {
-             Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, npe);
-             }
+                lock.release();
+            } catch (IOException ex) {
+                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NullPointerException npe) {
+                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, npe);
+            }
         }
-
-
         return null;
     }
 
@@ -253,5 +269,19 @@ public class ConvertServlet extends HttpServlet {
         postRequest.setHeader("Content-Type", "audio/x-flac; rate=8000");
         postRequest.setEntity(entity);
         return postRequest;
+    }
+
+    /**
+     * Uses GSON library to put the returned JSON into a SpeechResponse object
+     *
+     * @param response containing JSON to be packaged
+     * @return SpeechResponse containing recognised speech
+     * @throws IOException
+     */
+    private static SpeechResponse packageResponse(HttpResponse response) throws IOException {
+        Gson gson = new Gson();
+        InputStreamReader isr = new InputStreamReader(response.getEntity().getContent());
+        SpeechResponse speechResponse = gson.fromJson(isr, SpeechResponse.class);
+        return speechResponse;
     }
 }
