@@ -90,7 +90,7 @@ public class ConvertServlet extends HttpServlet {
      * @return
      */
     private static SpeechResponse getSpeechResponse(String[] speechFiles) {
-        
+
         SpeechResponse aggregateSpeech = new SpeechResponse();
         //Do speech recogntion and return JSON
         for (String filename : speechFiles) {
@@ -99,30 +99,28 @@ public class ConvertServlet extends HttpServlet {
             SpeechResponse speech = getSpeechResponse(filename);
             if (speech != null) {
                 aggregateSpeech.concat(speech);
-            }
-        }
 
-        FileOutputStream eos = null;
-        try {
-            eos = new FileOutputStream("/tmp/utterance");
-            IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.getBestUtterance()), eos);
-            eos.flush();
-            eos.close();
-            return aggregateSpeech;
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-        } 
-        catch (IOException ioe){
-            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ioe);
-        }
-        finally {
-            try {
-                eos.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+                
+                FileOutputStream eos = null;
+                try {
+                    eos = new FileOutputStream("/tmp/utterance_" + filename);
+                    IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), eos);
+                    eos.flush();
+                    eos.close();
+                    return aggregateSpeech;
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ioe) {
+                    Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ioe);
+                } finally {
+                    try {
+                        eos.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         }
-        
         return aggregateSpeech;
     }
 
