@@ -222,7 +222,7 @@ public class ConvertServlet extends HttpServlet {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            return output.split("\n");
+            return output.split("\\n");
         }
     }
 
