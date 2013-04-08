@@ -93,14 +93,14 @@ public class ConvertServlet extends HttpServlet {
         String filenames = "";
         for(int i=0; i<outputFilenames.length; i++)
             filenames = filenames.concat(outputFilenames[i] + "\n");
-        log("outputFilenames", filenames);
-        
         
         //Do speech recogntion and return JSON
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
         response.getOutputStream().print(aggregateSpeech.toJson());
         //IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), response.getOutputStream());
-
+        
+        log("response", aggregateSpeech.toJson());
+        
         //Temporary files can be deleted now
         /*delete(inputFilename);
          for(String filename : outputFilenames)
@@ -264,14 +264,10 @@ public class ConvertServlet extends HttpServlet {
             HttpClient client = new DefaultHttpClient();
             except = except.concat("6");
             HttpResponse response = client.execute(postRequest);
-            
-            except = except.concat("7");
-            SpeechResponse packagedResponse = packageResponse(response);
-            log("response", packagedResponse.toJson());
-            
+                 
             //return the JSON stream
-            except = except.concat("8");
-            return packagedResponse;
+            except = except.concat("7");
+            return packageResponse(response);
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
