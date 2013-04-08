@@ -18,7 +18,8 @@ VAD_DIR=`mktemp -d`;
 SOX_PATH=/usr/bin/sox;
 
 #Split the input file into several new files at silence
-$SOX_PATH -t ffmpeg "$2$3" "$2$4" trim 0 10 : newfile : restart 1>&2
+ffmpeg -i "$2$3" "$2$4"
+#$SOX_PATH -t ffmpeg "$2$3" "$2$4" trim 0 10 : newfile : restart 1>&2
 
 #Split the input file into several new files at silence
 #$SOX_PATH -t ffmpeg "$2$3" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
