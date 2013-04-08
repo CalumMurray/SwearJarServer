@@ -9,18 +9,18 @@ fi
 
 cd $1
 
-#Make file readable
-sudo chmod +r $2
-
-#Create temporary directories
+#Create temp directories
 SILENCE_DIR=`mktemp -d`;
 VAD_DIR=`mktemp -d`;
+TEMP_TRANSCODE=temp_$2$4;
+INPUT_FILE=$2$3
 SOX_PATH=/usr/bin/sox;
 
 #Split the input file into several new files at silence
-#ffmpeg -i "$2$3" "$2$4"
-$SOX_PATH -t ffmpeg "$2$3" "$2$4" trim 0 10 : newfile : restart 1>&2
-#$SOX_PATH "$2$4" "$2$4" trim 0 10 : newfile : restart 1>&2
+ffmpeg -i "INPUT_FILE" "$TEMP_TRANSCODE"
+$SOX_PATH "$TEMP_TRANSCODE" "$2$4" trim 0 10 : newfile : restart 1>&2
+#$SOX_PATH -t ffmpeg "$2$3" "$2$4" trim 0 10 : newfile : restart 1>&2
+
 
 #Split the input file into several new files at silence
 #$SOX_PATH -t ffmpeg "$2$3" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
@@ -40,6 +40,7 @@ find `pwd` -maxdepth 1 -name "$2*$4";
 
 #remove files which are <= 114 bytes in size
 
-#Delete temporary directories
+#Delete temp directories
 rm -r $SILENCE_DIR;
 rm -r $VAD_DIR;
+rm $TEMP_TRANSCODE;
