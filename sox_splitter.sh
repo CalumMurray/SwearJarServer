@@ -17,7 +17,7 @@ INPUT_FILE=$2$3
 SOX_PATH=/usr/bin/sox;
 
 #Split the input file into several new files at silence
-ffmpeg -i "INPUT_FILE" "$TEMP_TRANSCODE"
+ffmpeg -i "$INPUT_FILE" "$TEMP_TRANSCODE"
 $SOX_PATH "$TEMP_TRANSCODE" "$2$4" trim 0 10 : newfile : restart 1>&2
 #$SOX_PATH -t ffmpeg "$2$3" "$2$4" trim 0 10 : newfile : restart 1>&2
 
