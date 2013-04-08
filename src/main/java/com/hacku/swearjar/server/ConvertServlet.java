@@ -266,11 +266,12 @@ public class ConvertServlet extends HttpServlet {
             HttpResponse response = client.execute(postRequest);
             
             except = except.concat("7");
-            log("response", packageResponse(response).toJson());
+            SpeechResponse packagedResponse = packageResponse(response);
+            log("response", packagedResponse.toJson());
             
             //return the JSON stream
             except = except.concat("8");
-            return packageResponse(response);
+            return packagedResponse;
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
