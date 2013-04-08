@@ -11,9 +11,9 @@ import java.io.Serializable;
 public class SpeechResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    int status;
-    String id;
-    Hypothesis[] hypotheses;
+    private int status;
+    private String id;
+    private Hypothesis[] hypotheses;
 
     public SpeechResponse() {
         status = 6;
@@ -50,6 +50,7 @@ public class SpeechResponse implements Serializable {
     public void concat(SpeechResponse response) {
         //Check length equality and valid status code
         if (hypotheses.length == response.hypotheses.length && response.status == 0) {
+            status = response.status;
             for (int i = 0; i < hypotheses.length; i++) {
                 hypotheses[i].concat(response.hypotheses[i]);
             }

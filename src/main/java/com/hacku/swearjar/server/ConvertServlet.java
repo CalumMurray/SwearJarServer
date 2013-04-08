@@ -1,17 +1,20 @@
 package com.hacku.swearjar.server;
 
-import com.google.gson.Gson;
+import com.hacku.swearjar.speechapi.GoogleSpeechAPI;
 import com.hacku.swearjar.speechapi.SpeechResponse;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -22,12 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * Servlet implementation class ConvertServlet
@@ -38,6 +35,7 @@ urlPatterns = {"/convert"})
 public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
+    private static final ExecutorService speechServicePool = Executors.newFixedThreadPool(1000);
 
     private static void log(String filename, String output) {
         FileOutputStream eos = null;
@@ -91,16 +89,17 @@ public class ConvertServlet extends HttpServlet {
         String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
         String filenames = "";
-        for(int i=0; i<outputFilenames.length; i++)
+        for (int i = 0; i < outputFilenames.length; i++) {
             filenames = filenames.concat(outputFilenames[i] + "\n");
-        
+        }
+
         //Do speech recogntion and return JSON
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
         response.getOutputStream().print(aggregateSpeech.toJson());
         //IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), response.getOutputStream());
-        
+
         log("response", aggregateSpeech.toJson());
-        
+
         //Temporary files can be deleted now
         /*delete(inputFilename);
          for(String filename : outputFilenames)
@@ -112,19 +111,43 @@ public class ConvertServlet extends HttpServlet {
      * multiple flac files
      *
      * @param speechFiles
-     * @return
+     * @return aggregate SpeechResponse
      */
     private static SpeechResponse getSpeechResponse(String[] speechFiles) {
 
+        List<Future<SpeechResponse>> futureSpeechResponses = new LinkedList();
+
+        for (String filename : speechFiles) {
+            //Fire off files to Google asyncronously
+            GoogleSpeechAPI speechService = new GoogleSpeechAPI(filename);
+            futureSpeechResponses.add(speechServicePool.submit(speechService));
+        }
+
         SpeechResponse aggregateSpeech = new SpeechResponse();
-        //Do speech recogntion and return JSON
-        for (String filename : speechFiles) {  
-            //TODO create new threads here
-            SpeechResponse speech = getSpeechResponse(filename);
-            if (speech != null) {
-                aggregateSpeech.concat(speech);
+
+        //Wait for all the responses to become available and collate them
+        for (Future<SpeechResponse> futureSpeechResponse : futureSpeechResponses) {
+
+            try {
+                //Wait, if necessary, until the response is available
+                SpeechResponse response = futureSpeechResponse.get(20, TimeUnit.SECONDS);
+
+                if (response != null) {
+                    aggregateSpeech.concat(response);
+                }
+
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (TimeoutException ex) {
+                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                // stop the executor pool to stop accepting new requests
+                speechServicePool.shutdown();
             }
         }
+
         return aggregateSpeech;
     }
 
@@ -201,12 +224,12 @@ public class ConvertServlet extends HttpServlet {
             int exitStatus = pr.waitFor();
 
             output = IOUtils.toString(pr.getInputStream());
-            
+
             /*FileOutputStream fos = new FileOutputStream("/tmp/output");
-            IOUtils.copy(pr.getInputStream(), fos);
-            fos.flush();
-            fos.close();
-*/
+             IOUtils.copy(pr.getInputStream(), fos);
+             fos.flush();
+             fos.close();
+             */
             FileOutputStream eos = new FileOutputStream("/tmp/errors");
             IOUtils.copy(pr.getErrorStream(), eos);
             eos.flush();
@@ -225,102 +248,5 @@ public class ConvertServlet extends HttpServlet {
             log("output", output);
             return output.split("\n");
         }
-    }
-
-    /**
-     * Takes the audio at the specified path and sends it off to Google via HTTP
-     * POST. Packages the JSON response from Google into a SpeechResponse
-     * object.
-     *
-     * @param speechFilename path to the audio file
-     * @return SpeechResponse containing recognised speech, null if error occurs
-     */
-    private static SpeechResponse getSpeechResponse(String speechFilename) {
-        FileLock lock = null;
-        String except = "";
-
-        try {
-            log("file", speechFilename);
-            except = except.concat("1");
-            File file = waitForFileCreation(speechFilename, 1000);
-            // Read speech file 
-            //File file = new File(speechFilename);
-            except = except.concat("2");
-            FileInputStream inputStream = new FileInputStream(file);
-
-            //Wait for file to become available
-            //FileChannel channel = inputStream.getChannel();
-            //lock = channel.lock(0, Long.MAX_VALUE, true);//channel.lock(); 
-            except = except.concat("3");
-            ByteArrayInputStream data = new ByteArrayInputStream(
-                    IOUtils.toByteArray(inputStream));
-
-            // Set up the POST request
-            except = except.concat("4");
-            HttpPost postRequest = getPost(data);
-
-            // Do the request to google
-            except = except.concat("5");
-            HttpClient client = new DefaultHttpClient();
-            except = except.concat("6");
-            HttpResponse response = client.execute(postRequest);
-                 
-            //return the JSON stream
-            except = except.concat("7");
-            return packageResponse(response);
-
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-            log("exceptionFNF", ex.getMessage());
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            log("exceptionIOE", ioe.getMessage());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            log("exception", ex.toString());
-        } finally {
-            log("except", except);
-            /*try {
-                lock.release();
-            } catch (IOException ex) {
-                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NullPointerException npe) {
-                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, npe);
-            }*/
-        }
-        return null;
-    }
-
-    /**
-     * Sets up the post request =
-     *
-     * @param data audio file
-     * @return HttpPost object with parameters initialised to audio file
-     */
-    private static HttpPost getPost(ByteArrayInputStream data) {
-        HttpPost postRequest = new HttpPost(
-                "https://www.google.com/speech-api/v1/recognize"
-                + "?xjerr=1&pfilter=0&client=chromium&lang=en-US&maxresults=1");
-
-        // Specify Content and Content-Type parameters for POST request
-        MultipartEntity entity = new MultipartEntity();
-        entity.addPart("Content", new InputStreamBody(data, "Content"));
-        postRequest.setHeader("Content-Type", "audio/x-flac; rate=16000");
-        postRequest.setEntity(entity);
-        return postRequest;
-    }
-
-    /**
-     * Uses GSON library to put the returned JSON into a SpeechResponse object
-     *
-     * @param response containing JSON to be packaged
-     * @return SpeechResponse containing recognised speech
-     * @throws IOException
-     */
-    private static SpeechResponse packageResponse(HttpResponse response) throws IOException {
-        Gson gson = new Gson();
-        InputStreamReader isr = new InputStreamReader(response.getEntity().getContent());
-        SpeechResponse speechResponse = gson.fromJson(isr, SpeechResponse.class);
-        return speechResponse;
     }
 }
