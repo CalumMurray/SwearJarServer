@@ -26,7 +26,7 @@ import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
- * Sends a flac file to Google Speech API for the processing.  Should be run 
+ * Sends a flac file to Google Speech API for the processing.  Can be run 
  * asynchronously. 
  * 
  * @author Neil

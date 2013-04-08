@@ -31,11 +31,11 @@ import org.apache.commons.io.IOUtils;
  */
 @WebServlet(description = "Converts incoming file to .flac format before sending to Google's ASR.  Sends json response back to app.",
 urlPatterns = {"/convert"})
-@MultipartConfig(maxFileSize = 1024 * 1024 * 32)  //Accept files upto 32MB
+@MultipartConfig(maxFileSize = 1024 * 1024 * 32)  //TODO consider max file ssize Accept files upto 32MB 
 public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private static final ExecutorService speechServicePool = Executors.newFixedThreadPool(1000);
+    private static final ExecutorService speechServicePool = Executors.newFixedThreadPool(1000);  //TODO consider what this limit should be
 
     private static void log(String filename, String output) {
         FileOutputStream eos = null;
@@ -75,7 +75,6 @@ public class ConvertServlet extends HttpServlet {
         String inputExt = ".3gp";
         String outputExt = ".flac";
         String inputFilename = baseDir + "/" + baseFilename + inputExt;
-        String flacFilename = baseFilename + outputExt;
 
         //Read the wav file sent and store it in a .wav file
         Part part = request.getPart("Content");
@@ -85,25 +84,20 @@ public class ConvertServlet extends HttpServlet {
         fos.flush();
         fos.close();
 
-        //encode the file as flac
+        //encode the files as flac
         String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
-        String filenames = "";
-        for (int i = 0; i < outputFilenames.length; i++) {
-            filenames = filenames.concat(outputFilenames[i] + "\n");
-        }
-
-        //Do speech recogntion and return JSON
+        //Do speech recogntion and print JSON
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
         response.getOutputStream().print(aggregateSpeech.toJson());
-        //IOUtils.copy(IOUtils.toInputStream(aggregateSpeech.toJson()), response.getOutputStream());
 
         log("response", aggregateSpeech.toJson());
 
         //Temporary files can be deleted now
-        /*delete(inputFilename);
-         for(String filename : outputFilenames)
-         delete(filename);*/
+        delete(inputFilename);
+        for (String filename : outputFilenames) {
+            delete(filename);
+        }
     }
 
     /**
@@ -202,41 +196,22 @@ public class ConvertServlet extends HttpServlet {
      * @return array of files created
      */
     private static String[] transcode(String baseDir, String baseFilename, String inputExt, String outputExt) {
-        Runtime rt = Runtime.getRuntime();
         String output = "";
 
         try {
-
             String str = "sox_splitter " + baseDir + " " + baseFilename + " " + inputExt + " " + outputExt;
-            //"echo test &>> /tmp/output";
-                    /*"ffmpeg -i " + //Location of vlc
-             inputFile + " -ar 8000 -sample_fmt s16 "//Location of input 
-             + " " + outputFile;*/
-            /*"run \"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe\" -I --dummy-quiet " + //Location of vlc
-             inputFile + //Location of input 
-             " --sout=\"#transcode{acodec=flac, channels=1 ab=16 samplerate=16000}"
-             + ":std{access=file, mux=raw, dst="
-             + outputFile + //Location of output
-             "}\" vlc://quit";*/
 
-            Process pr = rt.exec(str);
+            Process pr = Runtime.getRuntime().exec(str);
 
             int exitStatus = pr.waitFor();
 
             output = IOUtils.toString(pr.getInputStream());
 
-            /*FileOutputStream fos = new FileOutputStream("/tmp/output");
-             IOUtils.copy(pr.getInputStream(), fos);
-             fos.flush();
-             fos.close();
-             */
             FileOutputStream eos = new FileOutputStream("/tmp/errors");
             IOUtils.copy(pr.getErrorStream(), eos);
             eos.flush();
             eos.close();
-
-            //output = IOUtils.toString(pr.getInputStream());
-
+            
             System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
 
         } catch (IOException e) {
@@ -244,9 +219,8 @@ public class ConvertServlet extends HttpServlet {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            log("output", output);
-            return output.split("\n");
         }
+        
+        return output.split("\n");
     }
 }
