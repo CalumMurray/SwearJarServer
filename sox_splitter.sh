@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #args check
-if [ $# -ne 4 ]
-then
+if [ $# -ne 4 ]; then
 	echo "usage: $0 baseDir baseFilename inputExt outputExt"
 	exit 1;
 fi
@@ -20,11 +19,14 @@ SOX_PATH=/usr/bin/sox;
 ffmpeg -i "$INPUT_FILE" "$TEMP_TRANSCODE"
 
 #Split the input file into several new files at silence
-$SOX_PATH "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
+$SOX_PATH "$TEMP_TRANSCODE" "$2$4" trim 0 13 : newfile : restart 1>&2
+#$SOX_PATH "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
 
 #Remove stuff which isn't speech
 for FILENAME in `ls $SILENCE_DIR`; do
-	$SOX_PATH "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse 1>&2 
+	if [ soxi -D -gt 0 ]; then
+		$SOX_PATH "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse 1>&2 ;
+	fi
 done
 
 #Split remaining oversized files
