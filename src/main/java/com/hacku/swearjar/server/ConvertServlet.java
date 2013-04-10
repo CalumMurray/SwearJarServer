@@ -36,8 +36,8 @@ urlPatterns = {"/convert"})
 public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private static final ExecutorService speechServicePool = Executors.newFixedThreadPool(1000);  //TODO consider what this limit should be
-
+    private static final ExecutorService speechServicePool = Executors.newCachedThreadPool(); 
+    
     private static void initLogFile() {
         try {
             Handler fileHandler = new FileHandler("/tmp/log");
@@ -110,7 +110,7 @@ public class ConvertServlet extends HttpServlet {
         List<Future<SpeechResponse>> futureSpeechResponses = new LinkedList();
 
         for (String filename : speechFiles) {
-            //Fire off files to Google asyncronously
+            //Fire off files to Google on different threads
             GoogleSpeechAPI speechService = new GoogleSpeechAPI(filename);
             futureSpeechResponses.add(speechServicePool.submit(speechService));
         }
@@ -127,7 +127,6 @@ public class ConvertServlet extends HttpServlet {
                 if (response != null) {
                     aggregateSpeech.concat(response);
                 }
-
             } catch (InterruptedException ex) {
                 Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ExecutionException ex) {
