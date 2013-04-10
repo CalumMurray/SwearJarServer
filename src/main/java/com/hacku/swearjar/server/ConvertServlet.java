@@ -32,7 +32,7 @@ import org.apache.commons.io.IOUtils;
  */
 @WebServlet(description = "Converts incoming file to .flac format before sending to Google's ASR.  Sends json response back to app.",
 urlPatterns = {"/convert"})
-@MultipartConfig(maxFileSize = 1024 * 1024 * 32)  //TODO consider max file ssize Accept files upto 32MB 
+@MultipartConfig(maxFileSize = 1024 * 1024 * 32)  //TODO consider max file size Accept files upto 32MB 
 public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -134,10 +134,7 @@ public class ConvertServlet extends HttpServlet {
                 Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
             } catch (TimeoutException ex) {
                 Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                // stop the executor pool to stop accepting new requests
-                speechServicePool.shutdown();
-            }
+            } 
         }
 
         return aggregateSpeech;
