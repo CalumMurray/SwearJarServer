@@ -39,10 +39,10 @@ public class ConvertServlet extends HttpServlet {
     private static final ExecutorService speechServicePool = Executors.newFixedThreadPool(1000);  //TODO consider what this limit should be
 
     private static void initLogFile() {
-        try {  
+        try {
             Handler fileHandler = new FileHandler("/tmp/log");
             Logger.getLogger("").addHandler(fileHandler);
-            
+
         } catch (IOException ex) {
             Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SecurityException ex) {
@@ -51,8 +51,8 @@ public class ConvertServlet extends HttpServlet {
     }
 
     /**
-     * Takes an audio file and performs speech recognition. 
-     * Gives a JSON response containing the recognised speech.
+     * Takes an audio file and performs speech recognition. Gives a JSON
+     * response containing the recognised speech.
      *
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
      * response)
@@ -60,7 +60,7 @@ public class ConvertServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         initLogFile();
-        
+
         String baseDir = "/tmp";
         String baseFilename = "SwearJar_"
                 + request.getSession().getCreationTime() //Timestamp
@@ -82,11 +82,15 @@ public class ConvertServlet extends HttpServlet {
         String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
         //Do speech recogntion and print JSON
-        SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
-        response.getOutputStream().print(aggregateSpeech.toJson());
-        
-        Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "response: {0}", aggregateSpeech.toJson());
-        
+        try {
+            SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
+            response.getOutputStream().print(aggregateSpeech.toJson());
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "response: {0}", aggregateSpeech.toJson());
+
+        } catch (Exception e) {
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, null, e);
+        }
+
         //Temporary files can be deleted now
         delete(inputFilename);
         for (String filename : outputFilenames) {
@@ -205,7 +209,7 @@ public class ConvertServlet extends HttpServlet {
             IOUtils.copy(pr.getErrorStream(), eos);
             eos.flush();
             eos.close();
-            
+
             System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
 
         } catch (IOException e) {
@@ -213,7 +217,7 @@ public class ConvertServlet extends HttpServlet {
         } catch (InterruptedException e) {
             Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, e);
         }
-        
+
         return output.split("\n");
     }
 }
