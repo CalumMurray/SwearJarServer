@@ -36,8 +36,8 @@ urlPatterns = {"/convert"})
 public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private static final ExecutorService speechServicePool = Executors.newCachedThreadPool(); 
-    
+    private static final ExecutorService speechServicePool = Executors.newCachedThreadPool();
+
     private static void initLogFile() {
         try {
             Handler fileHandler = new FileHandler("/tmp/log");
@@ -82,14 +82,9 @@ public class ConvertServlet extends HttpServlet {
         String[] outputFilenames = transcode(baseDir, baseFilename, inputExt, outputExt);
 
         //Do speech recogntion and print JSON
-        try {
-            SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
-            response.getOutputStream().print(aggregateSpeech.toJson());
-            Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "response: {0}", aggregateSpeech.toJson());
-
-        } catch (Exception e) {
-            Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, null, e);
-        }
+        SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
+        response.getOutputStream().print(aggregateSpeech.toJson());
+        Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "response: {0}", aggregateSpeech.toJson());
 
         //Temporary files can be deleted now
         delete(inputFilename);
@@ -133,7 +128,7 @@ public class ConvertServlet extends HttpServlet {
                 Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
             } catch (TimeoutException ex) {
                 Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-            } 
+            }
         }
 
         return aggregateSpeech;
