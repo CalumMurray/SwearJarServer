@@ -15,8 +15,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.mail.Message;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -57,6 +60,19 @@ public class ConvertServlet extends HttpServlet {
         }
     }
 
+    private static void initLogFile() {
+        try {
+            
+            Handler fileHandler = new FileHandler("/tmp/log");
+            Logger.getLogger("").addHandler(fileHandler);
+            
+        } catch (IOException ex) {
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     /**
      * Takes an audio file, transcodes it to flac, then performs speech
      * recognition. Gives a JSON response containing the recognised speech.
@@ -66,7 +82,8 @@ public class ConvertServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+        initLogFile();
+        
         String baseDir = "/tmp";
         String baseFilename = "SwearJar_"
                 + request.getSession().getCreationTime() //Timestamp
@@ -91,8 +108,10 @@ public class ConvertServlet extends HttpServlet {
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
         response.getOutputStream().print(aggregateSpeech.toJson());
 
-        log("response", aggregateSpeech.toJson());
+        //log("response", aggregateSpeech.toJson());
 
+        Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "response: {0}", aggregateSpeech.toJson());
+        
         //Temporary files can be deleted now
         delete(inputFilename);
         for (String filename : outputFilenames) {

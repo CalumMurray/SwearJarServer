@@ -96,7 +96,7 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
     }
 
     /**
-     * Sets up the post request =
+     * Sets up the post request
      *
      * @param data audio file
      * @return HttpPost object with parameters initialised to audio file
