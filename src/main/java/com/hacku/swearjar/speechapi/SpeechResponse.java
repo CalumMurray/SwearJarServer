@@ -2,6 +2,8 @@ package com.hacku.swearjar.speechapi;
 
 import com.google.gson.Gson;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Container for JSON returned from Google Speech API
@@ -23,22 +25,6 @@ public class SpeechResponse implements Serializable {
     }
 
     /**
-     * Constructs a single SpeechResponse object which contains a composite
-     * hypotheses from multiple SpeechResponse objects
-     *
-     * @param responses
-     */
-    public SpeechResponse(SpeechResponse[] responses) {
-        status = responses[0].status;
-        id = responses[0].id;
-        hypotheses = responses[0].hypotheses;
-
-        for (SpeechResponse response : responses) {
-            hypotheses[0].setUtterance(getBestUtterance().concat(" " + response.getBestUtterance()));
-        }
-    }
-
-    /**
      * Concatenates the hypotheses of the input SpeechResponse object to this
      * hypotheses of this SpeechResponse
      *
@@ -49,6 +35,8 @@ public class SpeechResponse implements Serializable {
      */
     public void concat(SpeechResponse response) {
         //Check length equality and valid status code
+        Logger.getLogger(SpeechResponse.class.getName()).log(Level.INFO, "concat {0}", this.toJson() + response.toJson());
+        
         if (hypotheses.length == response.hypotheses.length && response.status == 0) {
             status = response.status;
             for (int i = 0; i < hypotheses.length; i++) {
