@@ -41,8 +41,7 @@ public class ConvertServlet extends HttpServlet {
     private static final ExecutorService speechServicePool = Executors.newFixedThreadPool(1000);  //TODO consider what this limit should be
 
     private static void initLogFile() {
-        try {
-            
+        try {  
             Handler fileHandler = new FileHandler("/tmp/log");
             Logger.getLogger("").addHandler(fileHandler);
             
@@ -54,8 +53,8 @@ public class ConvertServlet extends HttpServlet {
     }
 
     /**
-     * Takes an audio file, transcodes it to flac, then performs speech
-     * recognition. Gives a JSON response containing the recognised speech.
+     * Takes an audio file and performs speech recognition. 
+     * Gives a JSON response containing the recognised speech.
      *
      * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
      * response)
@@ -181,7 +180,7 @@ public class ConvertServlet extends HttpServlet {
         try {
             new File(filename).delete();
         } catch (NullPointerException ioe) {
-            System.err.println("Error deleting: " + filename);
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, "error deleting {0}", filename);
         }
     }
 
@@ -212,10 +211,9 @@ public class ConvertServlet extends HttpServlet {
             System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, e);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, e);
         }
         
         return output.split("\n");

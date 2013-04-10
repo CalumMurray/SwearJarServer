@@ -68,12 +68,14 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
             // Set up the POST request
             HttpPost postRequest = getPost(data);
 
-            // Do the request to google
+            // Make the request to google
             HttpClient client = new DefaultHttpClient();
             HttpResponse response = client.execute(postRequest);
                  
             //return the JSON stream
-            return packageResponse(response);
+            SpeechResponse speechResponse = packageResponse(response);
+            Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.INFO, "response {0}", speechResponse.toJson());
+            return speechResponse;
 
         } catch (FileNotFoundException ex) {
             Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ex);
