@@ -5,7 +5,6 @@
 package com.hacku.swearjar.speechapi;
 
 import com.google.gson.Gson;
-import com.hacku.swearjar.server.ConvertServlet;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,7 +55,6 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
         FileLock lock = null;
 
         try {
-            //File file = waitForFileCreation(speechFilename, 1000);
             // Read speech file 
             File file = new File(filename);
             FileInputStream inputStream = new FileInputStream(file);
@@ -78,18 +76,18 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
             return packageResponse(response);
 
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ioe);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 lock.release();
             } catch (IOException ex) {
-                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ex);
             } catch (NullPointerException npe) {
-                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, npe);
+                Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, npe);
             }
         }
         return null;

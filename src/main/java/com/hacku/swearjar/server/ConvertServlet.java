@@ -40,26 +40,6 @@ public class ConvertServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final ExecutorService speechServicePool = Executors.newFixedThreadPool(1000);  //TODO consider what this limit should be
 
-    private static void log(String filename, String output) {
-        FileOutputStream eos = null;
-        try {
-            eos = new FileOutputStream("/tmp/" + filename);
-            IOUtils.copy(IOUtils.toInputStream(output), eos);
-            eos.flush();
-            eos.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ioe) {
-            Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ioe);
-        } finally {
-            try {
-                eos.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-
     private static void initLogFile() {
         try {
             
@@ -107,9 +87,7 @@ public class ConvertServlet extends HttpServlet {
         //Do speech recogntion and print JSON
         SpeechResponse aggregateSpeech = getSpeechResponse(outputFilenames);
         response.getOutputStream().print(aggregateSpeech.toJson());
-
-        //log("response", aggregateSpeech.toJson());
-
+        
         Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "response: {0}", aggregateSpeech.toJson());
         
         //Temporary files can be deleted now
