@@ -89,7 +89,7 @@ public class ConvertServlet extends HttpServlet {
         //Temporary files can be deleted now
         delete(inputFilename);
         for (String filename : outputFilenames) {
-            delete(filename);
+            //delete(filename);
         }
     }
 

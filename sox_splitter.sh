@@ -48,8 +48,8 @@ for FILENAME in `ls $TRIM_DIR`; do
 
 		#If the candidate merge pushes length over the limit then merge the files of previous iterations
 		if [ `echo "$CANDIDATE_MERGE_FILE_LENGTH > $MAX_LENGTH" | bc` -eq 1 ]; then
-			$SOX_PATH $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2 
-			CANDIDATE_MERGE_FILES=$FILEPATH
+			$SOX_PATH $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2;
+			CANDIDATE_MERGE_FILES=$FILEPATH;
 		fi
 
 		MERGE_FILES=$CANDIDATE_MERGE_FILES
@@ -58,7 +58,7 @@ done
 
 #For the unmerged remainder when MERGE_FILES is not empty
 if [ -n "$MERGE_FILES" ]; then
-	$SOX_PATH $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2
+	$SOX_PATH $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2;
 fi
 
 #Output a list of the files created with their absolute path
