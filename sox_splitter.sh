@@ -30,7 +30,7 @@ sox "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile
 #Split remaining oversized files
 #for FILENAME in `ls $VAD_DIR`; do
 for FILENAME in `ls $SILENCE_DIR`; do
-	sox "$VAD_DIR/$FILENAME" "$TRIM_DIR/$FILENAME" trim 0 $MAX_LENGTH : newfile : restart 1>&2 
+	sox "$SILENCE_DIR/$FILENAME" "$TRIM_DIR/$FILENAME" trim 0 $MAX_LENGTH : newfile : restart 1>&2 
 done
 
 #Merge consecutive files up to a length limit 13s
