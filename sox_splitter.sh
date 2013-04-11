@@ -53,8 +53,6 @@ for FILENAME in `ls $TRIM_DIR`; do
 		fi
 
 		MERGE_FILES=$CANDIDATE_MERGE_FILES
-		echo $MERGE_FILES
-		echo `soxi -TD $MERGE_FILES`;
 	fi
 done
 
