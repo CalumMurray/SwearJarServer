@@ -78,7 +78,7 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
             return speechResponse;
 
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, filename + " not found", ex);
         } catch (IOException ioe) {
             Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ioe);
         } catch (Exception ex) {
@@ -87,9 +87,9 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
             try {
                 lock.release();
             } catch (IOException ex) {
-                Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, "releasing lock", ex);
             } catch (NullPointerException npe) {
-                Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, null, npe);
+                Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.SEVERE, "releasing lock", npe);
             }
         }
         return null;
