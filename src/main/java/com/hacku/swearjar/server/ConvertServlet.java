@@ -195,13 +195,9 @@ public class ConvertServlet extends HttpServlet {
             int exitStatus = pr.waitFor();
 
             output = IOUtils.toString(pr.getInputStream());
-
-            FileOutputStream eos = new FileOutputStream("/tmp/errors");
-            IOUtils.copy(pr.getErrorStream(), eos);
-            eos.flush();
-            eos.close();
-
-            System.out.println(System.currentTimeMillis() + " VLC exit code: " + exitStatus);
+            
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.WARNING, "transcode warnings {0}", IOUtils.toString(pr.getErrorStream()));
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "sox_splitter exit code {0}", exitStatus);
 
         } catch (IOException e) {
             Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, e);
