@@ -11,27 +11,26 @@ cd $1
 #Create temp directories
 readonly MAX_LENGTH=13;
 SILENCE_DIR=`mktemp -d`;
-VAD_DIR=`mktemp -d`;
+#VAD_DIR=`mktemp -d`;
 TRIM_DIR=`mktemp -d`;
 TEMP_TRANSCODE=temp_$2$4;
 INPUT_FILE=$2$3
-SOX_PATH=/usr/bin/sox;
 
-#Split the input file into several new files at silence
+#Transcode
 ffmpeg -i "$INPUT_FILE" "$TEMP_TRANSCODE"
 
 #Split the input file into several new files at silence
-#$SOX_PATH "$TEMP_TRANSCODE" "$2$4" trim 0 10 : newfile : restart 1>&2
-$SOX_PATH "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
+sox "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
 
 #Remove stuff which isn't speech
-for FILENAME in `ls $SILENCE_DIR`; do
-		$SOX_PATH "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" 1>&2  #norm vad reverse vad reverse 1>&2
-done
+#for FILENAME in `ls $SILENCE_DIR`; do
+#		sox "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse 1>&2
+#done
 
 #Split remaining oversized files
-for FILENAME in `ls $VAD_DIR`; do
-	$SOX_PATH "$VAD_DIR/$FILENAME" "$TRIM_DIR/$FILENAME" trim 0 $MAX_LENGTH : newfile : restart 1>&2 
+#for FILENAME in `ls $VAD_DIR`; do
+for FILENAME in `ls $SILENCE_DIR`; do
+	sox "$VAD_DIR/$FILENAME" "$TRIM_DIR/$FILENAME" trim 0 $MAX_LENGTH : newfile : restart 1>&2 
 done
 
 #Merge consecutive files up to a length limit 13s
@@ -48,7 +47,7 @@ for FILENAME in `ls $TRIM_DIR`; do
 
 		#If the candidate merge pushes length over the limit then merge the files of previous iterations
 		if [ `echo "$CANDIDATE_MERGE_FILE_LENGTH > $MAX_LENGTH" | bc` -eq 1 ]; then
-			$SOX_PATH $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2;
+			sox $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2;
 			CANDIDATE_MERGE_FILES=$FILEPATH;
 		fi
 
@@ -58,14 +57,14 @@ done
 
 #For the unmerged remainder when MERGE_FILES is not empty
 if [ -n "$MERGE_FILES" ]; then
-	$SOX_PATH $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2;
+	sox $MERGE_FILES $2_$((FILE_INDEX++))$4 1>&2;
 fi
 
 #Output a list of the files created with their absolute path
 find `pwd` -maxdepth 1 -name "$2_*$4";
 
 #Delete temp directories
-#rm -r $SILENCE_DIR;
+rm -r $SILENCE_DIR;
 #rm -r $VAD_DIR;
-#rm -r $TRIM_DIR;
-#rm $TEMP_TRANSCODE;
+rm -r $TRIM_DIR;
+rm $TEMP_TRANSCODE;
