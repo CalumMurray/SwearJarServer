@@ -65,7 +65,7 @@ fi
 find `pwd` -maxdepth 1 -name "$2_*$4";
 
 #Delete temp directories
-rm -r $SILENCE_DIR;
-rm -r $VAD_DIR;
-rm -r $TRIM_DIR;
-rm $TEMP_TRANSCODE;
+#rm -r $SILENCE_DIR;
+#rm -r $VAD_DIR;
+#rm -r $TRIM_DIR;
+#rm $TEMP_TRANSCODE;
