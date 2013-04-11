@@ -26,7 +26,7 @@ $SOX_PATH "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : n
 
 #Remove stuff which isn't speech
 for FILENAME in `ls $SILENCE_DIR`; do
-		$SOX_PATH "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" norm vad reverse vad reverse 1>&2
+		$SOX_PATH "$SILENCE_DIR/$FILENAME" "$VAD_DIR/$FILENAME" 1>&2  #norm vad reverse vad reverse 1>&2
 done
 
 #Split remaining oversized files
