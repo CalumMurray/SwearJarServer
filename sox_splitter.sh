@@ -20,7 +20,7 @@ INPUT_FILE=$2$3
 ffmpeg -i "$INPUT_FILE" "$TEMP_TRANSCODE"
 
 #Split the input file into several new files at silence
-sox "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.2 2% 1 0.1 2% : newfile : restart 1>&2 
+sox "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
 
 #Remove stuff which isn't speech
 #for FILENAME in `ls $SILENCE_DIR`; do
