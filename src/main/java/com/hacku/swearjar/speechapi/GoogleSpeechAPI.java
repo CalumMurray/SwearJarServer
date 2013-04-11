@@ -25,23 +25,23 @@ import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
- * Sends a flac file to Google Speech API for the processing.  Can be run 
- * asynchronously. 
- * 
+ * Sends a flac file to Google Speech API for the processing. Can be run
+ * asynchronously.
+ *
  * @author Neil
  */
-public class GoogleSpeechAPI implements Callable<SpeechResponse>{
-    
+public class GoogleSpeechAPI implements Callable<SpeechResponse> {
+
     private String filename;
-    
+
     /**
-     * 
+     *
      * @param speechFilename the path to speech file which is to be analysed
      */
-    public GoogleSpeechAPI(String speechFilepath){
+    public GoogleSpeechAPI(String speechFilepath) {
         filename = speechFilepath;
     }
-    
+
     /**
      * Takes the audio at the specified path and sends it off to Google via HTTP
      * POST. Packages the JSON response from Google into a SpeechResponse
@@ -51,7 +51,7 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
      * @return SpeechResponse containing recognised speech, null if error occurs
      */
     @Override
-    public SpeechResponse call(){
+    public SpeechResponse call() {
         FileLock lock = null;
 
         try {
@@ -71,7 +71,7 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse>{
             // Make the request to google
             HttpClient client = new DefaultHttpClient();
             HttpResponse response = client.execute(postRequest);
-                 
+
             //return the JSON stream
             SpeechResponse speechResponse = packageResponse(response);
             Logger.getLogger(GoogleSpeechAPI.class.getName()).log(Level.INFO, "response {0}", speechResponse.toJson());

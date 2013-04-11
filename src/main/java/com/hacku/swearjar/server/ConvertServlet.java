@@ -70,7 +70,7 @@ public class ConvertServlet extends HttpServlet {
         String outputExt = ".flac";
         String inputFilename = baseDir + "/" + baseFilename + inputExt;
 
-        //Read the wav file sent and store it in a .wav file
+        //Read the file sent and store it 
         Part part = request.getPart("Content");
         InputStream inputStream = part.getInputStream();
         FileOutputStream fos = new FileOutputStream(inputFilename);
@@ -198,7 +198,7 @@ public class ConvertServlet extends HttpServlet {
             
             Logger.getLogger(ConvertServlet.class.getName()).log(Level.WARNING, "transcode warnings {0}", IOUtils.toString(pr.getErrorStream()));
             Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "sox_splitter exit code {0}", exitStatus);
-
+            Logger.getLogger(ConvertServlet.class.getName()).log(Level.INFO, "files created {0}", output);
         } catch (IOException e) {
             Logger.getLogger(ConvertServlet.class.getName()).log(Level.SEVERE, null, e);
         } catch (InterruptedException e) {
