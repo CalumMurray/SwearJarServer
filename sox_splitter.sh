@@ -13,7 +13,7 @@ readonly MAX_LENGTH=13;
 #SILENCE_DIR=`mktemp -d`;
 #VAD_DIR=`mktemp -d`;
 #TRIM_DIR=`mktemp -d`;
-#TEMP_TRANSCODE=temp_$2$4;
+TEMP_TRANSCODE=temp_$2$4;
 INPUT_FILE=$2$3
 
 #Transcode
