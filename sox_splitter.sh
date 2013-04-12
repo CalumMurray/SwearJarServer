@@ -12,14 +12,18 @@ cd $1
 readonly MAX_LENGTH=13;
 #SILENCE_DIR=`mktemp -d`;
 #VAD_DIR=`mktemp -d`;
-#TRIM_DIR=`mktemp -d`;
+TRIM_DIR=`mktemp -d`;
 TEMP_TRANSCODE=temp_$2$4;
 INPUT_FILE=$2$3
 
 #Transcode
 ffmpeg -i "$INPUT_FILE" "$TEMP_TRANSCODE"
 
-sox "$TEMP_TRANSCODE" "$2$4" trim 0 $MAX_LENGTH : newfile : restart 1>&2 
+sox "$TEMP_TRANSCODE" "$TRIM_DIR/$2$4" trim 0 $MAX_LENGTH : newfile : restart 1>&2 
+#Remove stuff which isn't speech
+for FILENAME in `ls $TRIM_DIR`; do
+		sox "$TRIM_DIR/$FILENAME" "$FILENAME" norm vad reverse vad reverse 1>&2
+done
 
 #Split the input file into several new files at silence
 #sox "$TEMP_TRANSCODE" "$SILENCE_DIR/$2$4" silence -l 1 0.1 2% 1 0.2 2% : newfile : restart 1>&2 
