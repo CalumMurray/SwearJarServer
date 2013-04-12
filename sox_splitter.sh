@@ -63,7 +63,7 @@ sox "$TEMP_TRANSCODE" "$2$4" trim 0 $MAX_LENGTH : newfile : restart 1>&2
 #fi
 
 #Output a list of the files created with their absolute path
-find `pwd` -maxdepth 1 -name "$2_*$4";
+find `pwd` -maxdepth 1 -name "$2*$4";
 
 #Delete temp directories
 #rm -r $SILENCE_DIR;
