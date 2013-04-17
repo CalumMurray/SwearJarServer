@@ -109,7 +109,7 @@ public class GoogleSpeechAPI implements Callable<SpeechResponse> {
         // Specify Content and Content-Type parameters for POST request
         MultipartEntity entity = new MultipartEntity();
         entity.addPart("Content", new InputStreamBody(data, "Content"));
-        postRequest.setHeader("Content-Type", "audio/x-flac; rate=16000");
+        postRequest.setHeader("Content-Type", "audio/x-flac; rate=8000");
         postRequest.setEntity(entity);
         return postRequest;
     }

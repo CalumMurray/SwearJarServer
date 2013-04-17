@@ -37,7 +37,7 @@ public class ConvertServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final ExecutorService speechServicePool = Executors.newCachedThreadPool();
-
+    
     private static void initLogFile() {
         try {
             Handler fileHandler = new FileHandler("/tmp/log");
